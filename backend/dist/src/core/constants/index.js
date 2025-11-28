@@ -1,0 +1,27 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.RULE = exports.ITEM = exports.FILTER = exports.PACKAGE_ITEM = exports.PACKAGE_FILTER = exports.PACKAGE_TYPE_REPOSITORY = exports.FLIGHT_REPOSITORY = exports.NOTIFICATIONS = exports.TERM = exports.FAQ = exports.BOOKING = exports.TRANSACTION = exports.COUPON_REPOSITORY = exports.REVIEW_REPOSITORY = exports.TICKET_REPOSITORY = exports.MEDIA_REPOSITORY = exports.SETTING_REPOSITORY = exports.WALLET_REPOSITORY = exports.USER_REPOSITORY = exports.PRODUCTION = exports.TEST = exports.DEVELOPMENT = exports.SEQUELIZE = void 0;
+exports.SEQUELIZE = 'SEQUELIZE';
+exports.DEVELOPMENT = 'development';
+exports.TEST = 'test';
+exports.PRODUCTION = 'production';
+exports.USER_REPOSITORY = 'USER_REPOSITORY';
+exports.WALLET_REPOSITORY = 'WALLET_REPOSITORY';
+exports.SETTING_REPOSITORY = 'SETTING_REPOSITORY';
+exports.MEDIA_REPOSITORY = 'MEDIA_REPOSITORY';
+exports.TICKET_REPOSITORY = 'TICKET_REPOSITORY';
+exports.REVIEW_REPOSITORY = 'REVIEW_REPOSITORY';
+exports.COUPON_REPOSITORY = 'COUPON_REPOSITORY';
+exports.TRANSACTION = 'TRANSACTION';
+exports.BOOKING = 'BOOKING';
+exports.FAQ = 'FAQ';
+exports.TERM = 'TERM';
+exports.NOTIFICATIONS = 'NOTIFICATIONS';
+exports.FLIGHT_REPOSITORY = 'FLIGHT_REPOSITORY';
+exports.PACKAGE_TYPE_REPOSITORY = 'PACKAGE_TYPE_REPOSITORY';
+exports.PACKAGE_FILTER = 'PACKAGE_FILTER';
+exports.PACKAGE_ITEM = 'PACKAGE_ITEM';
+exports.FILTER = 'FILTER';
+exports.ITEM = 'ITEM';
+exports.RULE = 'RULE';
+//# sourceMappingURL=index.js.map
