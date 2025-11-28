@@ -1,0 +1,75 @@
+
+services:
+  # Scraper Service (Python)
+  scraper:
+    build:
+      context: ./scrapper
+      dockerfile: Dockerfile
+    image: zambeel-scraper
+    container_name: zambeel-scraper-container
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5000:5000"
+    networks:
+      - zambeel-network
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Backend Service (NestJS)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: zambeel-backend
+    container_name: zambeel-backend-container
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks:
+      - zambeel-network
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - BACKEND_URL=https://zambeel.ir
+    depends_on:
+      - scraper
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Service (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: zambeel-frontend
+    container_name: zambeel-frontend-container
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    networks:
+      - zambeel-network
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  zambeel-network:
+    driver: bridge
+    name: zambeel-network

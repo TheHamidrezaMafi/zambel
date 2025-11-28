@@ -1,0 +1,355 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 262.1 83.3% 57.8%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 263.4 70% 50.4%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 263.4 70% 50.4%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@font-face {
+  font-family: 'IRANSans-Black';
+  font-style: normal;
+  src: 'fonts/IRANSans/IRANSans(FaNum)_Black.ttf';
+  src: local('IRANSans Black'), local('IRANSans-Black'),
+    url('../../public/fonts/IRANSans/IRANSans\(FaNum\)_Black.ttf');
+}
+
+@font-face {
+  font-family: 'IRANSans-Bold';
+  font-style: normal;
+  src: 'fonts/IRANSans/IRANSans(FaNum)_Bold.ttf';
+  src: local('IRANSans Bold'), local('IRANSans-Bold'),
+    url('../../public/fonts/IRANSans/IRANSans\(FaNum\)_Bold.ttf');
+}
+
+@font-face {
+  font-family: 'IRANSans-Medium';
+  font-style: normal;
+  src: 'fonts/IRANSans/IRANSans(FaNum)_Medium.ttf';
+  src: local('IRANSans Medium'), local('IRANSans-Medium'),
+    url('../../public/fonts/IRANSans/IRANSans\(FaNum\)_Medium.ttf');
+}
+
+@font-face {
+  font-family: 'IRANSans';
+  font-style: normal;
+  src: 'fonts/IRANSans/IRANSans(FaNum).ttf';
+  src: local('IRANSans Regular'), local('IRANSans-Regular'),
+    url('../../public/fonts/IRANSans/IRANSans(FaNum).ttf');
+}
+
+@font-face {
+  font-family: 'IRANSans-Light';
+  font-style: normal;
+  src: 'fonts/IRANSans/IRANSans(FaNum)_Light.ttf';
+  src: local('IRANSans Light'), local('IRANSans-Light'),
+    url('../../public/fonts/IRANSans/IRANSans\(FaNum\)_Light.ttf');
+}
+
+@font-face {
+  font-family: 'IRANSans-UltraLight';
+  font-style: normal;
+  src: 'fonts/IRANSans/IRANSans(FaNum)_UltraLight.ttf';
+  src: local('IRANSans UltraLight'), local('IRANSans-UltraLight'),
+    url('../../public/fonts/IRANSans/IRANSans\(FaNum\)_UltraLight.ttf');
+}
+html,
+span,
+body,
+td,
+* {
+  font-family: 'IRANSans';
+  scroll-behavior: smooth;
+}
+body {
+  /* background-color: #f8fafc; */
+  /* background-image: radial-gradient(circle, #e5e7eb 1.5px, transparent 1.5px),
+    radial-gradient(circle, #e5e7eb 1.5px, transparent 1.5px);
+  background-size: 32px 32px;
+  background-position: 0 0, 16px 16px; */
+  direction: rtl;
+  font-feature-settings: 'tnum';
+  -moz-font-feature-settings: 'ss04';
+  -webkit-font-feature-settings: 'ss04';
+  font-feature-settings: 'ss04';
+}
+.num-fa {
+  unicode-bidi: bidi-override;
+  direction: rtl;
+}
+/* Toast */
+.Toastify__toast--error {
+  padding: 20px 20px !important;
+  direction: rtl !important;
+  font-size: 0.875rem;
+}
+
+.Toastify__toast--success {
+  padding: 20px 20px !important;
+  direction: rtl !important;
+}
+.Toastify__toast--warning {
+  padding: 20px 20px !important;
+  direction: rtl !important;
+}
+.Toastify__toast-body {
+  color: #444c63;
+  font-family: Yekan-bakh, serif, sans-serif !important;
+}
+
+/*  scrollbar  */
+
+::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+.container-scroll::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+}
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: gray;
+  background-clip: padding-box;
+  border-radius: 4px;
+}
+input[type='radio'] {
+  accent-color: #332449;
+  width: 24px;
+  height: 24px;
+}
+.form-checkbox {
+  accent-color: #332449;
+}
+
+/* scroll disable */
+
+.no-scroll {
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .no-scroll-sm {
+    overflow: hidden;
+  }
+}
+
+.bg-soft-pattern {
+  background-color: #f8fafc;
+  background-image: repeating-linear-gradient(
+      135deg,
+      #e5e7eb 0px,
+      #e5e7eb 1px,
+      transparent 1px,
+      transparent 24px
+    ),
+    repeating-linear-gradient(
+      45deg,
+      #e5e7eb 0px,
+      #e5e7eb 1px,
+      transparent 1px,
+      transparent 24px
+    );
+  background-size: 24px 24px;
+  background-blend-mode: lighten;
+}
+
+/* Responsive Container Utilities */
+.container-mobile {
+  width: 100%;
+  max-width: 550px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .container-mobile {
+    max-width: 1200px;
+    padding: 2rem;
+  }
+}
+
+/* Mobile-first Typography */
+.text-responsive-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .text-responsive-sm {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+}
+
+.text-responsive-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .text-responsive-base {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+}
+
+.text-responsive-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+@media (min-width: 768px) {
+  .text-responsive-lg {
+    font-size: 1.25rem;
+    line-height: 1.875rem;
+  }
+}
+
+/* Mobile-optimized spacing */
+.spacing-mobile {
+  padding: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .spacing-mobile {
+    padding: 1.5rem;
+  }
+}
+
+/* Touch-friendly buttons */
+.btn-touch {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@media (min-width: 768px) {
+  .btn-touch {
+    min-height: 40px;
+    min-width: auto;
+  }
+}
+
+/* Mobile Card Styles */
+.card-mobile {
+  border-radius: 0.75rem;
+  box-shadow: 0px 4px 15px 0px rgba(0, 0, 0, 0.1);
+  background: white;
+}
+
+@media (min-width: 768px) {
+  .card-mobile {
+    border-radius: 1rem;
+    box-shadow: 0px 8px 35px 0px rgba(144, 144, 144, 0.15);
+  }
+}
+
+/* Safe Area for notched devices */
+.safe-area-inset {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Prevent text size adjustment on mobile */
+@media (max-width: 768px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
+}
+
+/* Improved touch targets */
+@media (max-width: 768px) {
+  button, a, input, select, textarea {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Desktop grid layouts */
+@media (min-width: 768px) {
+  .desktop-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .desktop-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}

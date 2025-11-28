@@ -1,0 +1,24 @@
+export const SEQUELIZE = 'SEQUELIZE';
+export const DEVELOPMENT = 'development';
+export const TEST = 'test';
+export const PRODUCTION = 'production';
+export const USER_REPOSITORY='USER_REPOSITORY';
+export const WALLET_REPOSITORY = 'WALLET_REPOSITORY'
+export const SETTING_REPOSITORY='SETTING_REPOSITORY'
+export const MEDIA_REPOSITORY='MEDIA_REPOSITORY'
+export const TICKET_REPOSITORY = 'TICKET_REPOSITORY';
+export const REVIEW_REPOSITORY = 'REVIEW_REPOSITORY';
+export const COUPON_REPOSITORY='COUPON_REPOSITORY';
+export const TRANSACTION = 'TRANSACTION'
+export const BOOKING='BOOKING';
+export const FAQ = 'FAQ'
+export const TERM = 'TERM'
+export const NOTIFICATIONS = 'NOTIFICATIONS'
+export const FLIGHT_REPOSITORY = 'FLIGHT_REPOSITORY'
+export const PACKAGE_TYPE_REPOSITORY = 'PACKAGE_TYPE_REPOSITORY'
+export const PACKAGE_FILTER='PACKAGE_FILTER'
+export const PACKAGE_ITEM='PACKAGE_ITEM'
+export const FILTER='FILTER'
+export const ITEM='ITEM'
+export const RULE='RULE'
+
