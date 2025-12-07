@@ -10,10 +10,12 @@ const FlightCard = ({
   flight,
   cityList,
   airlineList,
+  delay = 0,
 }: {
   flight: FlightData;
   cityList?: any;
   airlineList?: any;
+  delay?: number;
 }) => {
   const {
     origin,
@@ -45,132 +47,120 @@ const FlightCard = ({
   const [imageError, setImageError] = useState(false);
 
   return (
-    <div className="w-full">
-      <div
-        className={`border shadow-md hover:shadow-xl mx-auto flex bg-card flex-col border-border/60 w-full rounded-2xl transition-all duration-300 hover:border-primary/20 ${
-          capacity <= 0 ? 'opacity-60 grayscale' : ''
-        }`}
-      >
-        {/* header */}
-        <div className="w-full px-5 py-3 flex justify-between items-center border-b border-border/50 bg-muted/10 rounded-t-2xl">
-          <div className="flex items-center gap-2">
-             <span className="text-xs md:text-sm text-muted-foreground bg-background px-2 py-1 rounded-md border border-border">
-              سیستمی
-            </span>
-             <span className="text-xs md:text-sm text-muted-foreground">
-              {capacity > 0 ? `${capacity} صندلی باقی‌مانده` : 'تکمیل ظرفیت'}
-            </span>
-          </div>
+    <div
+      className="glass-strong rounded-2xl p-5 md:p-6 hover:glow-primary transition-all duration-500 group opacity-0 animate-slide-up"
+      style={{ animationDelay: `${delay}ms`, animationFillMode: "forwards" }}
+    >
+      <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
+        {/* Airline Info */}
+        <div className="flex items-center gap-4 lg:w-40">
           {airline && !imageError ? (
-            <div className="flex items-center gap-2">
-               <span className="text-sm font-medium text-foreground hidden md:block">{airline_name_fa}</span>
-               <Image
+            <div className="w-12 h-12 rounded-xl bg-secondary/80 flex items-center justify-center overflow-hidden">
+              <Image
                 width={40}
                 height={40}
-                className="rounded-full w-8 h-8 md:w-10 md:h-10 object-contain bg-white p-1 border border-border"
+                className="w-10 h-10 object-contain"
                 alt={airline_name_fa}
                 src={airline.logo_url}
                 onError={() => setImageError(true)}
               />
             </div>
           ) : (
-            <div className="flex items-center gap-2">
-               <span className="text-sm font-medium text-foreground hidden md:block">{airline_name_fa}</span>
-               <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-muted flex items-center justify-center border border-border">
-                <AirlineIcon size={20} className="text-muted-foreground" />
-              </div>
+            <div className="w-12 h-12 rounded-xl bg-secondary/80 flex items-center justify-center">
+              <AirlineIcon size={24} className="text-muted-foreground" />
             </div>
           )}
+          <div>
+            <p className="font-medium text-foreground">{airline_name_fa}</p>
+            <p className="text-xs text-muted-foreground">
+              {capacity > 0 ? `${capacity} صندلی` : 'تکمیل ظرفیت'}
+            </p>
+          </div>
         </div>
 
-        {/* body */}
-        <div className="flex flex-col md:flex-row gap-4 p-4 md:p-6">
-          {/* legs */}
-          <div className="flex-1 flex flex-col justify-center">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex flex-col items-center">
-                 <span className="font-bold text-lg md:text-xl text-foreground">
-                  {departure_date_time
-                    ? convertDateToTime(departure_date_time)
-                    : '-:-'}
-                </span>
-                <span className="text-xs md:text-sm text-muted-foreground mt-1">
-                  {
-                    cityList.find(
-                      (city: any) => city.value === origin.toUpperCase()
-                    )?.label
-                  }
-                </span>
-              </div>
+        {/* Flight Timeline */}
+        <div className="flex-1 flex items-center gap-4">
+          {/* Departure */}
+          <div className="text-center min-w-[70px]">
+            <p className="text-xl md:text-2xl font-bold text-foreground">
+              {departure_date_time ? convertDateToTime(departure_date_time) : '-:-'}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {cityList.find((city: any) => city.value === origin.toUpperCase())?.label}
+            </p>
+          </div>
 
-              <div className="flex-1 px-4 flex flex-col items-center">
-                 <div className="w-full flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full bg-primary/20 border border-primary"></div>
-                    <div className="h-[1px] flex-1 bg-border relative">
-                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2">
-                          <AirlineIcon size={14} className="text-muted-foreground rotate-90" />
-                       </div>
-                    </div>
-                    <div className="h-2 w-2 rounded-full bg-primary"></div>
-                 </div>
-                 <span className="text-xs text-muted-foreground mt-2">مدت سفر</span>
+          {/* Timeline */}
+          <div className="flex-1 flex flex-col items-center gap-1 px-2">
+            <div className="flex items-center w-full gap-2">
+              <div className="w-2 h-2 rounded-full bg-primary glow-primary" />
+              <div className="flex-1 h-[2px] bg-gradient-to-l from-primary via-accent to-primary relative overflow-hidden">
+                <div 
+                  className="absolute inset-0 bg-gradient-to-l from-transparent via-foreground/30 to-transparent animate-shimmer" 
+                  style={{ backgroundSize: "200% 100%" }} 
+                />
               </div>
-
-              <div className="flex flex-col items-center">
-                <span className="font-bold text-lg md:text-xl text-foreground">
-                  {arrival_date_time
-                    ? convertDateToTime(arrival_date_time)
-                    : '-:-'}
-                </span>
-                 <span className="text-xs md:text-sm text-muted-foreground mt-1">
-                  {
-                    cityList.find(
-                      (city: any) => city.value === destination.toUpperCase()
-                    )?.label
-                  }
-                </span>
+              <svg className="w-4 h-4 text-primary rotate-[135deg] group-hover:-translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+              </svg>
+              <div className="flex-1 h-[2px] bg-gradient-to-l from-primary via-accent to-primary relative overflow-hidden">
+                <div 
+                  className="absolute inset-0 bg-gradient-to-l from-transparent via-foreground/30 to-transparent animate-shimmer"
+                  style={{ backgroundSize: "200% 100%" }}
+                />
               </div>
+              <div className="w-2 h-2 rounded-full bg-accent glow-accent" />
             </div>
-            
-            <div className="flex justify-end mt-2">
-               <p className="text-xs text-muted-foreground bg-muted/30 px-2 py-1 rounded">
-                تامین کننده: {getProviderName(provider_name)}
-              </p>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" />
+              </svg>
+              <span>مدت سفر</span>
             </div>
           </div>
 
-          {/* Divider for mobile */}
-          <div className="h-[1px] w-full bg-border md:hidden"></div>
-          
-          {/* Divider for desktop */}
-          <div className="w-[1px] h-auto bg-border hidden md:block"></div>
-
-          {/* Price & Action */}
-          <div className="flex md:flex-col justify-between items-center md:justify-center gap-3 md:min-w-[180px]">
-            <div className="flex flex-col items-end md:items-center">
-              <div className="flex items-center gap-1">
-                <span className="text-xl md:text-2xl text-primary font-bold">
-                  {adult_price ? ConvertRialToToman(adult_price) : '0'}
-                </span>
-                <span className="text-xs font-medium text-muted-foreground">
-                  تومان
-                </span>
-              </div>
-              <span className="text-xs text-muted-foreground hidden md:inline-block">قیمت برای یک بزرگسال</span>
-            </div>
-            
-            <button
-              disabled={isSubmitDisabled}
-              className={`text-sm md:text-base font-semibold rounded-xl md:rounded-2xl flex items-center justify-center h-11 md:h-12 px-6 md:px-8 transition-all duration-200 w-full md:w-auto ${
-                isSubmitDisabled 
-                  ? 'bg-muted text-muted-foreground cursor-not-allowed' 
-                  : 'bg-primary hover:bg-primary/90 shadow-sm hover:shadow-md active:scale-95 text-gray-900'
-              }`}
-            >
-              {capacity ? 'انتخاب پرواز' : 'ناموجود'}
-            </button>
+          {/* Arrival */}
+          <div className="text-center min-w-[70px]">
+            <p className="text-xl md:text-2xl font-bold text-foreground">
+              {arrival_date_time ? convertDateToTime(arrival_date_time) : '-:-'}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {cityList.find((city: any) => city.value === destination.toUpperCase())?.label}
+            </p>
           </div>
         </div>
+
+        {/* Price & Action */}
+        <div className="flex items-center justify-between lg:flex-col lg:items-end gap-3 lg:gap-2 pt-4 lg:pt-0 border-t lg:border-t-0 border-border/30">
+          <div className="text-right">
+            <p className="text-2xl md:text-3xl font-bold gradient-text">
+              {adult_price ? ConvertRialToToman(adult_price) : '۰'}
+              <span className="text-sm font-normal text-muted-foreground mr-1">تومان</span>
+            </p>
+            <p className="text-xs text-muted-foreground">برای یک نفر</p>
+          </div>
+          <button
+            disabled={isSubmitDisabled}
+            className={`gradient-primary text-primary-foreground font-semibold rounded-xl px-6 py-3 transition-all duration-300 flex items-center gap-2 group/btn ${
+              isSubmitDisabled 
+                ? 'opacity-50 cursor-not-allowed' 
+                : 'glow-primary hover:opacity-90 hover:scale-[1.02]'
+            }`}
+          >
+            <span>{capacity ? 'انتخاب' : 'ناموجود'}</span>
+            <svg className="w-4 h-4 group-hover/btn:-translate-x-1 transition-transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      {/* Provider Badge */}
+      <div className="flex justify-end mt-3">
+        <p className="text-xs text-muted-foreground bg-secondary/50 px-3 py-1 rounded-full">
+          تامین کننده: {getProviderName(provider_name)}
+        </p>
       </div>
     </div>
   );

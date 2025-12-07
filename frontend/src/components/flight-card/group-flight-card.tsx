@@ -6,7 +6,6 @@ import { FaPlane, FaInfoCircle } from 'react-icons/fa';
 import { ArrowSmall } from '../common/icons';
 import { useState, useRef, useEffect } from 'react';
 import DetailCard from './detail-card';
-import { useRouter } from 'next/router';
 import { createPortal } from 'react-dom';
 import AirlineIcon from '../common/icons/AirlineIcon';
 
@@ -19,6 +18,7 @@ const GroupFlightCard = ({ flight, airlineList }: any) => {
     arrival_date_time,
     departure_date_time,
     flights,
+    minPrice,
   } = flight;
 
   const [showMore, setShowMore] = useState(false);
@@ -26,14 +26,10 @@ const GroupFlightCard = ({ flight, airlineList }: any) => {
   const [imageError, setImageError] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const { query } = useRouter();
-  const orderBy = (query.orderBy as string) || 'lowest_price';
 
   const isSubmitDisabled = flights.length === 0;
-  const price =
-    orderBy === 'highest_price'
-      ? Math.max(...flights.map((flight: any) => flight.adult_price))
-      : Math.min(...flights.map((flight: any) => flight.adult_price));
+  // Always show the lowest price as the main price
+  const price = minPrice ?? Math.min(...flights.map((flight: any) => flight.adult_price));
   const airline = airlineList.find(
     (airline: any) => airline.persian_name === airline_name_fa
   );

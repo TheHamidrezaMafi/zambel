@@ -33,23 +33,23 @@ const DateHeader = () => {
   return (
     <>
       {isOneWay ? (
-        <div className="w-full flex justify-between items-center px-4 py-3 bg-card text-foreground">
+        <div className="w-full flex justify-between items-center px-4 py-3 text-foreground">
           <button
             onClick={() => onClick(true)}
             disabled={isToday}
-            className={`flex items-center gap-2 text-sm font-medium transition-colors ${
-              isToday ? 'text-muted-foreground/50 cursor-not-allowed' : 'text-primary hover:text-primary/80'
+            className={`flex items-center gap-2 text-sm font-medium transition-all duration-300 rounded-lg px-3 py-1.5 ${
+              isToday ? 'text-muted-foreground/50 cursor-not-allowed' : 'text-primary hover:bg-primary/10'
             }`}
           >
             <ArrowSmall className={isToday ? 'fill-muted-foreground/50' : 'fill-primary'} />
             روز قبل
           </button>
-          <span className="text-sm font-bold text-foreground">
+          <span className="text-sm font-bold gradient-text">
             {new Date(departure).toLocaleDateString('fa-IR', { weekday: 'long', day: 'numeric', month: 'long' })}
           </span>
           <button
             onClick={() => onClick(false)}
-            className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+            className="flex items-center gap-2 text-sm font-medium text-primary hover:bg-primary/10 transition-all duration-300 rounded-lg px-3 py-1.5"
           >
             روز بعد <ArrowSmall className="rotate-180 fill-primary" />
           </button>

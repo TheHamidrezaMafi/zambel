@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import moment from 'moment-jalaali';
 import 'moment-hijri';
 
@@ -409,8 +410,8 @@ const Calendar: React.FC<CalendarProps> = ({
     return date.isBetween(selectedStartDate, selectedEndDate, 'day', '[]');
   };
 
-  const isDateSelected = (date: moment.Moment) => {
-    return (
+  const isDateSelected = (date: moment.Moment): boolean => {
+    return !!(
       (selectedStartDate && date.isSame(selectedStartDate, 'day')) ||
       (selectedEndDate && date.isSame(selectedEndDate, 'day'))
     );
@@ -497,65 +498,73 @@ const Calendar: React.FC<CalendarProps> = ({
 
   if (!isOpen) return null;
 
-  return (
-    <div
-      className={`fixed inset-0 bg-black bg-opacity-50 z-50 ${
-        isMobile || isAnchoredDesktop ? '' : 'flex items-center justify-center'
-      }`}
-      onMouseDown={(e) => {
-        if (isMobile) return;
-        if (e.target === e.currentTarget) {
-          onClose && onClose();
-        }
-      }}
-    >
+  // Mobile Bottom Sheet View
+  if (isMobile) {
+    return (
+      <MobileCalendarSheet
+        isOpen={isOpen}
+        onClose={onClose}
+        isRange={isRange}
+        selectedStartDate={selectedStartDate}
+        selectedEndDate={selectedEndDate}
+        isSelectingEndDate={isSelectingEndDate}
+        setIsSelectingEndDate={setIsSelectingEndDate}
+        setSelectedEndDate={setSelectedEndDate}
+        currentMonth={currentMonth}
+        today={today}
+        getDaysInMonth={getDaysInMonth}
+        isDateSelectable={isDateSelectable}
+        isDateInRange={isDateInRange}
+        isDateSelected={isDateSelected}
+        isOfficialHoliday={isOfficialHoliday}
+        handleDateClick={handleDateClick}
+        handleConfirm={handleConfirm}
+        formatPersianDate={formatPersianDate}
+        getPersianMonthName={getPersianMonthName}
+        isCurrentPersianMonth={isCurrentPersianMonth}
+        gregorianToJalali={gregorianToJalali}
+        persianDays={persianDays}
+      />
+    );
+  }
+
+  // Desktop View - render in portal for proper z-index
+  if (!isOpen) return null;
+
+  const desktopContent = (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/30"
+        style={{ zIndex: 9998 }}
+        onClick={() => onClose && onClose()}
+      />
+      
+      {/* Calendar popup - positioned near the input */}
       <div
         ref={calendarRef}
-        className={`bg-white select-none ${
-          isMobile
-            ? 'h-full w-full flex flex-col'
-            : isAnchoredDesktop
-            ? 'rounded-xl shadow-2xl border border-border max-w-[700px]'
-            : 'max-w-4xl w-full mx-4 rounded-xl shadow-2xl border border-border'
-        }`}
-        style={
-          isAnchoredDesktop && anchorStyle
-            ? {
-                position: 'fixed',
-                top: anchorStyle.top,
-                left: anchorStyle.left,
-                zIndex: 60,
-              }
-            : undefined
-        }
-        onMouseDown={(e) => e.stopPropagation()}
+        className="fixed bg-white select-none rounded-xl shadow-2xl border border-border animate-in fade-in-0 zoom-in-95 duration-200"
+        style={{
+          zIndex: 9999,
+          top: anchorStyle?.top ?? '50%',
+          left: anchorStyle?.left ?? '50%',
+          transform: anchorStyle ? 'none' : 'translate(-50%, -50%)',
+          maxWidth: '700px',
+          maxHeight: 'calc(100vh - 40px)',
+          overflow: 'auto',
+        }}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200">
           <div className="flex items-center space-x-4 space-x-reverse">
-            {isMobile ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => onClose && onClose()}
-                  aria-label="بازگشت"
-                  className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <span className="text-lg text-gray-500">‹</span>
-                </button>
-                <span className="text-sm text-gray-600">انتخاب تاریخ</span>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={goToToday}
-                  className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
-                >
-                  برو به امروز
-                </button>
-              </>
-            )}
+            <button
+              type="button"
+              onClick={goToToday}
+              className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              برو به امروز
+            </button>
           </div>
 
           <div className="flex items-center space-x-2 space-x-reverse">
@@ -565,192 +574,9 @@ const Calendar: React.FC<CalendarProps> = ({
         </div>
 
         {/* Calendar Content */}
-        <div className={`${isMobile ? 'flex-1 flex flex-col min-h-0' : 'p-4'}`}>
-          {isMobile ? (
-            <>
-              {/* Fixed Header for Mobile */}
-              <div className="sticky top-0 bg-gray-100 z-10 border-b border-gray-200">
-                {/* Days of Week Header */}
-                <div className="grid grid-cols-7 gap-1 px-4 py-2">
-                  {persianDays.map((day) => (
-                    <div
-                      key={day}
-                      className="text-center text-sm font-medium text-gray-500 py-1"
-                    >
-                      {day}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Scrollable Months Container */}
-              <div className="flex-1 overflow-y-auto scrollbar-hide">
-                {/* Generate multiple months for scrolling */}
-                {Array.from({ length: 13 }, (_, i) => {
-                  const monthDate = currentMonth.clone().add(i, 'months'); // Current month + 12 future months
-                  const monthDays = getDaysInMonth(monthDate);
-
-                  return (
-                    <div key={i} className="p-4">
-                      {/* Month Name - Sticky */}
-                      <div className="sticky top-0 bg-white z-10 py-2 border-b border-gray-100">
-                        <h3 className="text-lg font-semibold text-gray-900 text-center">
-                          {getPersianMonthName(monthDate.toDate())}
-                        </h3>
-                      </div>
-
-                      {/* Calendar Grid */}
-                      <div className="grid grid-cols-7 gap-1 mt-4">
-                        {monthDays.map((day, index) => {
-                          // If day is null, render empty div
-                          if (day === null) {
-                            return <div key={index} className="h-10 w-10" />;
-                          }
-
-                          const isCurrentMonth = isCurrentPersianMonth(
-                            day,
-                            monthDate
-                          );
-                          const isSelectable = isDateSelectable(day);
-                          const isInRange = isDateInRange(day);
-                          const isSelected = isDateSelected(day);
-                          const isTodayDate = day.isSame(today, 'day');
-
-                          const isOfficialHolidayDay = isOfficialHoliday(day);
-                          return (
-                            <button
-                              key={index}
-                              onClick={() => handleDateClick(day)}
-                              disabled={!isSelectable}
-                              className={`
-                                   relative h-10 w-10 rounded-lg text-sm font-medium transition-all
-                                   ${
-                                     !isCurrentMonth
-                                       ? 'text-gray-300'
-                                       : 'text-gray-900'
-                                   }
-                                   ${isOfficialHolidayDay ? 'text-red-500' : ''}
-                                   ${
-                                     !isSelectable
-                                       ? 'cursor-not-allowed opacity-30'
-                                       : 'cursor-pointer hover:bg-orange-50'
-                                   }
-                                   ${
-                                     isSelected
-                                       ? 'bg-orange-500 text-white hover:bg-orange-600'
-                                       : ''
-                                   }
-                                   ${isInRange ? 'bg-orange-100' : ''}
-                                   ${
-                                     isTodayDate ? 'ring-2 ring-orange-200' : ''
-                                   }
-                                 `}
-                            >
-                              {gregorianToJalali(day.toDate()).day}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Mobile Footer */}
-              <div
-                className="border-t border-gray-200 bg-white p-4 flex-shrink-0"
-                style={{ boxShadow: '0 -4px 12px rgba(0, 0, 0, 0.15)' }}
-              >
-                {/* Top row */}
-                {isSelectingEndDate || selectedEndDate ? (
-                  // Two cards (50% each) + small cancel button on the left
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="grid grid-cols-2 gap-3 flex-1">
-                      {/* Depart card */}
-                      <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-700">
-                        <div className="flex flex-col leading-4 text-right">
-                          <span className="text-[11px] text-gray-500">رفت</span>
-                          <span className="text-sm font-semibold mt-0.5">
-                            {selectedStartDate
-                              ? formatPersianDate(selectedStartDate.toDate())
-                              : 'انتخاب کنید'}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Return card */}
-                      <button
-                        type="button"
-                        onClick={() => setIsSelectingEndDate(true)}
-                        className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-left text-xs text-gray-700"
-                      >
-                        <div className="flex flex-col leading-4 text-right">
-                          <span className="text-[11px] text-gray-400">
-                            برگشت
-                          </span>
-                          <span
-                            className={`text-sm font-semibold mt-0.5 ${
-                              selectedEndDate ? '' : 'text-blue-600'
-                            }`}
-                          >
-                            {selectedEndDate
-                              ? formatPersianDate(selectedEndDate.toDate())
-                              : '-'}
-                          </span>
-                        </div>
-                      </button>
-                    </div>
-
-                    <button
-                      type="button"
-                      aria-label="لغو تاریخ برگشت"
-                      onClick={() => {
-                        setIsSelectingEndDate(false);
-                        setSelectedEndDate(null);
-                      }}
-                      className="w-6 h-6 rounded-full border border-gray-200 bg-gray-50 text-gray-500 flex items-center justify-center"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ) : (
-                  // Initial: link on the left + single depart pill on the right
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs text-gray-700 justify-self-end w-full">
-                      <div className="flex flex-col leading-4 text-right">
-                        <span className="text-[11px] text-gray-500">رفت</span>
-                        <span className="text-sm font-semibold mt-0.5">
-                          {selectedStartDate
-                            ? formatPersianDate(selectedStartDate.toDate())
-                            : 'انتخاب کنید'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <button
-                      type="button"
-                      className="text-blue-600 text-sm font-medium hover:text-blue-700 justify-self-start text-right"
-                      onClick={() => setIsSelectingEndDate(true)}
-                    >
-                      + افزودن تاریخ برگشت
-                    </button>
-                  </div>
-                )}
-
-                {/* Full width confirm button */}
-                <button
-                  type="button"
-                  onClick={handleConfirm}
-                  className="w-full h-11 rounded-lg bg-blue-600 text-white text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
-                  disabled={!selectedStartDate}
-                >
-                  تایید تاریخ
-                </button>
-              </div>
-            </>
-          ) : (
-            /* Desktop Layout - Original */
-            <div className="grid grid-cols-2 gap-4">
+        <div className="p-4">
+          {/* Desktop Layout */}
+          <div className="grid grid-cols-2 gap-4">
               {/* Current Month */}
               <div>
                 <div className="grid grid-cols-3 items-center mb-4">
@@ -917,11 +743,9 @@ const Calendar: React.FC<CalendarProps> = ({
                 </div>
               </div>
             </div>
-          )}
         </div>
 
-        {!isMobile && (
-          <div className="px-4 py-2 border-t border-gray-200">
+        <div className="px-4 py-2 border-t border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4 space-x-reverse">
                 {!isRange ? (
@@ -1006,9 +830,394 @@ const Calendar: React.FC<CalendarProps> = ({
               </div>
             </div>
           </div>
-        )}
       </div>
-    </div>
+    </>
+  );
+
+  // Render desktop calendar in portal for proper z-index stacking
+  if (typeof window !== 'undefined') {
+    return createPortal(desktopContent, document.body);
+  }
+  
+  return desktopContent;
+};
+
+// Mobile Calendar Bottom Sheet Component
+interface MobileCalendarSheetProps {
+  isOpen: boolean;
+  onClose?: () => void;
+  isRange: boolean;
+  selectedStartDate: moment.Moment | null;
+  selectedEndDate: moment.Moment | null;
+  isSelectingEndDate: boolean;
+  setIsSelectingEndDate: (value: boolean) => void;
+  setSelectedEndDate: (value: moment.Moment | null) => void;
+  currentMonth: moment.Moment;
+  today: moment.Moment;
+  getDaysInMonth: (date: moment.Moment) => (moment.Moment | null)[];
+  isDateSelectable: (date: moment.Moment) => boolean;
+  isDateInRange: (date: moment.Moment) => boolean;
+  isDateSelected: (date: moment.Moment) => boolean;
+  isOfficialHoliday: (date: moment.Moment) => boolean;
+  handleDateClick: (date: moment.Moment) => void;
+  handleConfirm: () => void;
+  formatPersianDate: (date: Date) => string;
+  getPersianMonthName: (date: Date) => string;
+  isCurrentPersianMonth: (date: moment.Moment, currentMonth: moment.Moment) => boolean;
+  gregorianToJalali: (date: Date) => { year: number; month: number; day: number };
+  persianDays: string[];
+}
+
+const MobileCalendarSheet: React.FC<MobileCalendarSheetProps> = ({
+  isOpen,
+  onClose,
+  isRange,
+  selectedStartDate,
+  selectedEndDate,
+  isSelectingEndDate,
+  setIsSelectingEndDate,
+  setSelectedEndDate,
+  currentMonth,
+  today,
+  getDaysInMonth,
+  isDateSelectable,
+  isDateInRange,
+  isDateSelected,
+  isOfficialHoliday,
+  handleDateClick,
+  handleConfirm,
+  formatPersianDate,
+  getPersianMonthName,
+  isCurrentPersianMonth,
+  gregorianToJalali,
+  persianDays,
+}) => {
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const [sheetHeight, setSheetHeight] = useState(50);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startY, setStartY] = useState(0);
+  const [startHeight, setStartHeight] = useState(50);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  const MIN_HEIGHT = 50;
+  const MAX_HEIGHT = 95;
+  const INITIAL_HEIGHT = 50;
+  const DISMISS_THRESHOLD = 30;
+
+  // Handle mounting for portal
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  // Handle open/close animations
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      setIsVisible(true);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsAnimating(true);
+          setSheetHeight(INITIAL_HEIGHT);
+        });
+      });
+    } else {
+      setIsAnimating(false);
+      setSheetHeight(0);
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+        document.body.style.overflow = '';
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
+  const handleDragStart = useCallback((clientY: number) => {
+    setIsDragging(true);
+    setStartY(clientY);
+    setStartHeight(sheetHeight);
+  }, [sheetHeight]);
+
+  const handleDragMove = useCallback((clientY: number) => {
+    if (!isDragging) return;
+
+    const deltaY = startY - clientY;
+    const viewportHeight = window.innerHeight;
+    const deltaPercent = (deltaY / viewportHeight) * 100;
+    const newHeight = Math.min(MAX_HEIGHT, Math.max(15, startHeight + deltaPercent));
+    
+    setSheetHeight(newHeight);
+  }, [isDragging, startY, startHeight]);
+
+  const handleDragEnd = useCallback(() => {
+    setIsDragging(false);
+    
+    if (sheetHeight < DISMISS_THRESHOLD) {
+      onClose && onClose();
+      return;
+    }
+    
+    if (sheetHeight < 45) {
+      setSheetHeight(MIN_HEIGHT);
+    } else if (sheetHeight > 80) {
+      setSheetHeight(MAX_HEIGHT);
+    } else {
+      setSheetHeight(INITIAL_HEIGHT);
+    }
+  }, [sheetHeight, onClose]);
+
+  // Mouse events
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    handleDragStart(e.clientY);
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      handleDragMove(e.clientY);
+    };
+
+    const handleMouseUp = () => {
+      handleDragEnd();
+    };
+
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, handleDragMove, handleDragEnd]);
+
+  // Touch events
+  const handleTouchStart = (e: React.TouchEvent) => {
+    handleDragStart(e.touches[0].clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    handleDragMove(e.touches[0].clientY);
+  };
+
+  const handleTouchEnd = () => {
+    handleDragEnd();
+  };
+
+  const handleBackdropClick = () => {
+    onClose && onClose();
+  };
+
+  if (!mounted || !isVisible) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999]">
+      {/* Backdrop */}
+      <div
+        className={`absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300 ${
+          isAnimating ? 'opacity-100' : 'opacity-0'
+        }`}
+        onClick={handleBackdropClick}
+      />
+
+      {/* Bottom Sheet */}
+      <div
+        ref={sheetRef}
+        className={`absolute bottom-0 left-0 right-0 bg-card rounded-t-3xl shadow-2xl flex flex-col overflow-hidden ${
+          isDragging ? '' : 'transition-all duration-300 ease-out'
+        }`}
+        style={{
+          height: `${sheetHeight}vh`,
+          maxHeight: '95vh',
+          transform: isAnimating ? 'translateY(0)' : 'translateY(100%)',
+        }}
+      >
+        {/* Drag Handle */}
+        <div
+          className="flex-shrink-0 flex flex-col items-center pt-3 pb-2 cursor-grab active:cursor-grabbing touch-none select-none border-b border-border/30"
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="w-12 h-1.5 bg-muted-foreground/40 rounded-full" />
+          <p className="text-base font-bold text-foreground mt-3">انتخاب تاریخ</p>
+        </div>
+
+        {/* Days of Week Header - Sticky */}
+        <div className="flex-shrink-0 bg-card z-10 border-b border-border/20 px-4 py-2">
+          <div className="grid grid-cols-7 gap-1">
+            {persianDays.map((day) => (
+              <div
+                key={day}
+                className="text-center text-sm font-medium text-muted-foreground py-1"
+              >
+                {day}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Scrollable Months Container */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 px-4">
+          {Array.from({ length: 13 }, (_, i) => {
+            const monthDate = currentMonth.clone().add(i, 'months');
+            const monthDays = getDaysInMonth(monthDate);
+
+            return (
+              <div key={i} className="py-4">
+                {/* Month Name */}
+                <div className="sticky top-0 bg-card z-10 py-2 mb-2">
+                  <h3 className="text-lg font-semibold text-foreground text-center">
+                    {getPersianMonthName(monthDate.toDate())}
+                  </h3>
+                </div>
+
+                {/* Calendar Grid */}
+                <div className="grid grid-cols-7 gap-1">
+                  {monthDays.map((day, index) => {
+                    if (day === null) {
+                      return <div key={index} className="h-11 w-full" />;
+                    }
+
+                    const isCurrentMonthDay = isCurrentPersianMonth(day, monthDate);
+                    const isSelectable = isDateSelectable(day);
+                    const isInRange = isDateInRange(day);
+                    const isSelected = isDateSelected(day);
+                    const isTodayDate = day.isSame(today, 'day');
+                    const isOfficialHolidayDay = isOfficialHoliday(day);
+
+                    return (
+                      <button
+                        type="button"
+                        key={index}
+                        onClick={() => handleDateClick(day)}
+                        disabled={!isSelectable}
+                        className={`
+                          relative h-11 w-full rounded-xl text-sm font-medium transition-all
+                          ${!isCurrentMonthDay ? 'text-muted-foreground/30' : 'text-foreground'}
+                          ${isOfficialHolidayDay && isCurrentMonthDay ? '!text-destructive' : ''}
+                          ${!isSelectable ? 'cursor-not-allowed opacity-30' : 'cursor-pointer active:scale-95'}
+                          ${isSelected ? 'bg-primary text-primary-foreground' : ''}
+                          ${isInRange && !isSelected ? 'bg-primary/20' : ''}
+                          ${isTodayDate && !isSelected ? 'ring-2 ring-primary/50' : ''}
+                        `}
+                      >
+                        {gregorianToJalali(day.toDate()).day}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Footer */}
+        <div className="border-t border-border bg-card p-4 flex-shrink-0">
+          {isRange && (isSelectingEndDate || selectedEndDate) ? (
+            <div className="flex items-center gap-2 mb-3">
+              <div className="grid grid-cols-2 gap-3 flex-1">
+                {/* Depart card */}
+                <div className="bg-secondary/50 border border-border/50 rounded-xl px-3 py-2">
+                  <div className="flex flex-col leading-4 text-right">
+                    <span className="text-xs text-muted-foreground">رفت</span>
+                    <span className="text-sm font-semibold mt-0.5 text-foreground">
+                      {selectedStartDate
+                        ? formatPersianDate(selectedStartDate.toDate())
+                        : 'انتخاب کنید'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Return card */}
+                <button
+                  type="button"
+                  onClick={() => setIsSelectingEndDate(true)}
+                  className="bg-secondary/50 border border-border/50 rounded-xl px-3 py-2 text-left"
+                >
+                  <div className="flex flex-col leading-4 text-right">
+                    <span className="text-xs text-muted-foreground">برگشت</span>
+                    <span className={`text-sm font-semibold mt-0.5 ${selectedEndDate ? 'text-foreground' : 'text-primary'}`}>
+                      {selectedEndDate
+                        ? formatPersianDate(selectedEndDate.toDate())
+                        : '-'}
+                    </span>
+                  </div>
+                </button>
+              </div>
+
+              <button
+                type="button"
+                aria-label="لغو تاریخ برگشت"
+                onClick={() => {
+                  setIsSelectingEndDate(false);
+                  setSelectedEndDate(null);
+                }}
+                className="w-8 h-8 rounded-full border border-border bg-secondary/50 text-muted-foreground flex items-center justify-center"
+              >
+                ×
+              </button>
+            </div>
+          ) : isRange ? (
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="bg-secondary/50 border border-border/50 rounded-xl px-3 py-2">
+                <div className="flex flex-col leading-4 text-right">
+                  <span className="text-xs text-muted-foreground">رفت</span>
+                  <span className="text-sm font-semibold mt-0.5 text-foreground">
+                    {selectedStartDate
+                      ? formatPersianDate(selectedStartDate.toDate())
+                      : 'انتخاب کنید'}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="text-primary text-sm font-medium justify-self-start text-right flex items-center"
+                onClick={() => setIsSelectingEndDate(true)}
+              >
+                + افزودن تاریخ برگشت
+              </button>
+            </div>
+          ) : (
+            <div className="mb-3">
+              <div className="bg-secondary/50 border border-border/50 rounded-xl px-3 py-2 inline-block">
+                <div className="flex flex-col leading-4 text-right">
+                  <span className="text-xs text-muted-foreground">تاریخ</span>
+                  <span className="text-sm font-semibold mt-0.5 text-foreground">
+                    {selectedStartDate
+                      ? formatPersianDate(selectedStartDate.toDate())
+                      : 'انتخاب کنید'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Confirm button */}
+          <button
+            type="button"
+            onClick={handleConfirm}
+            className="w-full h-12 rounded-xl bg-primary text-primary-foreground text-base font-bold disabled:opacity-60 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+            disabled={!selectedStartDate}
+          >
+            تایید تاریخ
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
   );
 };
 

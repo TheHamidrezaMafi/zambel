@@ -8,16 +8,13 @@ import { useMemo } from 'react';
 export const useListing = (flights: Array<FlightData>) => {
   const router = useRouter();
   const orderBy = (router.query.orderBy as string) || 'lowest_price';
-  const unavailableTicket = useMemo(() => {
-    return flights.filter(
-      (item) => getAdultPrice(item) === 0 || item.capacity <= 0
-    );
-  }, [flights]);
+  
   const availableTickets = useMemo(() => {
     return flights.filter(
       (item) => getAdultPrice(item) !== 0 && item.capacity > 0
     );
   }, [flights]);
+  
   const filteredFlights = useMemo(() => {
     return filtering(availableTickets, router.query);
   }, [availableTickets, router.query]);
@@ -26,5 +23,5 @@ export const useListing = (flights: Array<FlightData>) => {
     return sortFlights(filteredFlights, orderBy);
   }, [filteredFlights, orderBy]);
 
-  return { flights: sortedFlights, unavailableTicket };
+  return { flights: sortedFlights };
 };

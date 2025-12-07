@@ -1,9 +1,8 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react';
 import FilterChip from './filter-chip';
 import { FilterModalProperties } from './types';
-import { SlideInModal } from '../common/slide-in-modal';
+import { BottomSheet } from '../common/bottom-sheet';
 import { useRouter } from 'next/router';
-import { Arrow } from '../common/icons';
 import { omit } from 'lodash';
 import FilterCheckbox from './filter-checkbox';
 import { useFilterCount } from '@/hooks/useFilters';
@@ -99,31 +98,23 @@ const FilterModal = ({
                 <div className="flex gap-2 flex-col">
                   {allAirlines?.map((airline) => (
                     <FilterCheckbox
-                      name="airline_name_fa"
+                      name="airlines"
                       key={airline}
                       item={airline}
                     />
                   ))}
                 </div>
               </div>
-              <div className="flex flex-col gap-3 pb-4 border-b border-border">
+              <div className="flex flex-col gap-3 pb-4">
                 <p className="text-base font-bold text-foreground">تامین کننده ها</p>
                 <div className="flex gap-2 flex-col">
                   {allProviders?.map((provider) => (
                     <FilterCheckbox
-                      name="provider_name"
+                      name="providers"
                       key={provider}
                       label={getProviderName(provider)}
                       item={provider}
                     />
-                  ))}
-                </div>
-              </div>
-              <div className="flex flex-col gap-3 pb-4">
-                <p className="text-base font-bold text-foreground">نمایش بلیط ها</p>
-                <div className="flex gap-2 flex-col">
-                  {['موجود', 'ناموجود'].map((item, index) => (
-                    <FilterCheckbox name="available" key={index} item={item} />
                   ))}
                 </div>
               </div>
@@ -142,57 +133,41 @@ const FilterModal = ({
 
       {/* Mobile Bottom Sheet */}
       {isMobile && (
-        <SlideInModal open={open}>
-          <div className="h-screen flex flex-col justify-between p-4 md:p-6 safe-area-inset">
-            <div className="flex flex-col gap-4 overflow-y-auto">
-              <div className="flex items-center gap-4 sticky top-0 bg-white py-2 z-10">
-                <button onClick={onCloseModal} className="btn-touch">
-                  <Arrow />
-                </button>
-                <p className="text-base md:text-lg font-bold">فیلترها</p>
+        <BottomSheet open={open} onClose={onCloseModal} title="فیلترها">
+          <div className="flex flex-col gap-4 pb-4">
+            <div className="flex flex-col gap-3 border-b border-border/30 pb-4">
+              <p className="text-base font-bold text-foreground">ایرلاین ها</p>
+              <div className="flex gap-2 flex-col">
+                {allAirlines?.map((airline) => (
+                  <FilterCheckbox
+                    name="airlines"
+                    key={airline}
+                    item={airline}
+                  />
+                ))}
               </div>
-              <div className="flex flex-col gap-3 md:gap-4 border-b border-gray-300 py-3 md:py-4">
-                <p className="text-base md:text-lg font-bold">ایرلاین ها</p>
-                <div className="flex gap-2 md:gap-3 flex-col">
-                  {allAirlines?.map((airline) => (
-                    <FilterCheckbox
-                      name="airline_name_fa"
-                      key={airline}
-                      item={airline}
-                    />
-                  ))}
-                </div>
-              </div>
-              <div className="flex flex-col gap-3 md:gap-4 border-b border-gray-300 py-3 md:py-4">
-                <p className="text-base md:text-lg font-bold">تامین کننده ها</p>
-                <div className="flex gap-2 md:gap-3 flex-col">
-                  {allProviders?.map((provider) => (
-                    <FilterCheckbox
-                      name="provider_name"
-                      key={provider}
-                      label={getProviderName(provider)}
-                      item={provider}
-                    />
-                  ))}
-                </div>
-              </div>
-              <div className="flex flex-col gap-3 md:gap-4 border-b border-gray-300 py-3 md:py-4">
-                <p className="text-base md:text-lg font-bold">نمایش بلیط ها</p>
-                <div className="flex gap-2 md:gap-3 flex-col">
-                  {['موجود', 'ناموجود'].map((item, index) => (
-                    <FilterCheckbox name="available" key={index} item={item} />
-                  ))}
-                </div>
+            </div>
+            <div className="flex flex-col gap-3 pb-4">
+              <p className="text-base font-bold text-foreground">تامین کننده ها</p>
+              <div className="flex gap-2 flex-col">
+                {allProviders?.map((provider) => (
+                  <FilterCheckbox
+                    name="providers"
+                    key={provider}
+                    label={getProviderName(provider)}
+                    item={provider}
+                  />
+                ))}
               </div>
             </div>
             <button
               onClick={onCloseModal}
-              className="text-base md:text-lg bg-primary-400 rounded-xl md:rounded-2xl flex items-center justify-center h-12 md:h-14 px-6 md:px-10 text-white w-full btn-touch transition-all hover:bg-primary-500 mt-4 shadow-lg"
+              className="text-base bg-primary rounded-xl flex items-center justify-center h-12 px-6 text-primary-foreground w-full transition-all hover:bg-primary/90 font-bold shadow-md hover:shadow-lg active:scale-[0.98]"
             >
               {filterCount === 0 ? 'اعمال' : `مشاهده ${resultCount} نتیجه`}
             </button>
           </div>
-        </SlideInModal>
+        </BottomSheet>
       )}
     </div>
   );

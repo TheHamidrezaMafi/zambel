@@ -8,6 +8,13 @@ export default {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
+    container: {
+      center: true,
+      padding: "1.5rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
     screens: {
       'xs': '375px',
       'sm': '640px',
@@ -17,6 +24,9 @@ export default {
       '2xl': '1536px',
     },
     extend: {
+      fontFamily: {
+        sans: ['IRANSans', 'sans-serif'],
+      },
       spacing: {
         'safe-top': 'env(safe-area-inset-top)',
         'safe-bottom': 'env(safe-area-inset-bottom)',
@@ -48,17 +58,6 @@ export default {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
-          25: '#F4F3F5',
-          50: '#EBE9ED',
-          100: '#C0BBC7',
-          200: '#A19AAB',
-          300: '#766C85',
-          400: '#05203c',
-          500: '#332449',
-          600: '#2E2142',
-          700: '#241A34',
-          800: '#1C1428',
-          900: '#150F1F',
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -83,6 +82,14 @@ export default {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        glass: {
+          DEFAULT: "hsl(var(--glass))",
+          border: "hsl(var(--glass-border))",
+        },
+        glow: {
+          primary: "hsl(var(--glow-primary))",
+          accent: "hsl(var(--glow-accent))",
         },
         gray: {
           light: '#606060',
@@ -122,6 +129,30 @@ export default {
           500: '#FF4444',
           600: '#DB3140',
         },
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+      keyframes: {
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+        shimmer: "shimmer 2s linear infinite",
       },
     },
   },

@@ -18,7 +18,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'zambeel.ir',
+        hostname: 'api.zambeel.ir',
         port: '',
         pathname: '/assets/**',
       },

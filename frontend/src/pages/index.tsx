@@ -17,29 +17,56 @@ export default function Home() {
 
   return (
     <Layout>
-      <div className="min-h-[calc(100vh-4rem)] w-full flex flex-col items-center justify-center py-8 md:py-12 px-4 bg-gradient-to-br from-background via-background to-muted/20">
-        {/* Hero Section / Search Container */}
-        <div className="w-full max-w-5xl space-y-6 md:space-y-10">
-          <div className="text-center space-y-3 md:space-y-5">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-foreground tracking-tight leading-tight">
-              سفر خود را آغاز کنید
+      <section className="relative min-h-screen flex items-center justify-center pt-24 pb-12 overflow-hidden">
+        <div className="container mx-auto px-4 relative z-10">
+          {/* Hero Text */}
+          <div className="text-center mb-8 md:mb-10">
+            <div className="inline-flex items-center gap-2 glass rounded-full px-3 py-1.5 mb-4 opacity-0 animate-slide-up">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-glow-pulse" />
+              <span className="text-xs text-muted-foreground">بهترین قیمت‌ها را پیدا کنید</span>
+            </div>
+            
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 opacity-0 animate-slide-up animate-delay-100">
+              <span className="text-foreground">سفر با </span>
+              <span className="gradient-text">زمبیل</span>
             </h1>
-            <p className="text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              بهترین قیمت بلیط هواپیما و رزرو هتل را با زمبیل تجربه کنید.
+            
+            <p className="text-sm md:text-base text-muted-foreground max-w-lg mx-auto opacity-0 animate-slide-up animate-delay-200">
+              مقایسه قیمت از صدها ایرلاین. ارزان‌ترین پروازها را پیدا کنید.
             </p>
           </div>
 
-          <div className="bg-card border border-border/60 rounded-3xl shadow-2xl p-5 md:p-8 lg:p-10 backdrop-blur-sm">
-            <Tabs queryKey="selectedTab" list={list} defaultTab="flight" />
-            <div className="border-b border-border/50 my-5 md:my-6" />
-            {(selectedTab === 'flight' || selectedTab === undefined) && (
-              <FlightSearch />
-            )}
-            {selectedTab === 'hotel' && <HotelSearch />}
-            {selectedTab === 'trip' && <TripMaker />}
+          {/* Search Form */}
+          <div className="opacity-0 animate-slide-up animate-delay-300">
+            <div className="w-full max-w-5xl mx-auto">
+              <div className="glass-strong rounded-2xl p-6 md:p-8 glow-primary">
+                <Tabs queryKey="selectedTab" list={list} defaultTab="flight" />
+                <div className="border-b border-border/50 my-5 md:my-6" />
+                {(selectedTab === 'flight' || selectedTab === undefined) && (
+                  <FlightSearch />
+                )}
+                {selectedTab === 'hotel' && <HotelSearch />}
+                {selectedTab === 'trip' && <TripMaker />}
+              </div>
+            </div>
+          </div>
+
+          {/* Trust Badges */}
+          <div className="flex flex-wrap justify-center gap-6 md:gap-12 mt-12 opacity-0 animate-slide-up animate-delay-400">
+            {[
+              { value: "۵۰۰+", label: "ایرلاین" },
+              { value: "۱۰۰M+", label: "مسافر" },
+              { value: "۲۴/۷", label: "پشتیبانی" },
+              { value: "بهترین", label: "قیمت‌ها" },
+            ].map((badge, index) => (
+              <div key={index} className="text-center">
+                <p className="text-2xl md:text-3xl font-bold gradient-text">{badge.value}</p>
+                <p className="text-sm text-muted-foreground">{badge.label}</p>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+      </section>
     </Layout>
   );
 }

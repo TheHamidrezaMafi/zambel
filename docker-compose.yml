@@ -36,7 +36,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=8080
-      - BACKEND_URL=https://zambeel.ir
+      - BACKEND_URL=https://api.zambeel.ir
     depends_on:
       - scraper
     healthcheck:

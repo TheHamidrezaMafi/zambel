@@ -26,10 +26,14 @@ const FlightSearch = () => {
   const { data: cityList = [] } = useCities(flightDirection);
   const [parsedHistory, setParsedHistory] = useState<any[]>([]);
 
-  const { control, handleSubmit, reset, getValues, setValue } =
+  const { control, handleSubmit, reset, getValues, setValue, watch } =
     useForm<FormValues>({
       mode: 'onChange',
     });
+
+  // Watch origin and destination for reactive filtering
+  const watchedOrigin = watch('origin');
+  const watchedDestination = watch('destination');
 
   // Calendar open control via query (keep old step flow)
   const isCalendarOpen = query.step === 'calendar';
@@ -92,8 +96,6 @@ const FlightSearch = () => {
       },
     });
   };
-  const currentOrigin = getValues('origin');
-  const currentDestination = getValues('destination');
 
   return (
     <div className="flex flex-col gap-4">
@@ -121,7 +123,7 @@ const FlightSearch = () => {
         <div className="flex flex-col gap-4 md:grid md:grid-cols-[1fr_auto_1fr] md:gap-4 md:items-center">
           <MobileSelect
             options={cityList.filter((city) =>
-              currentDestination ? city.value !== currentDestination.code : true
+              watchedDestination ? city.value !== watchedDestination.code : true
             )}
             label="مبدا (شهر)"
             control={control}
@@ -199,7 +201,7 @@ const FlightSearch = () => {
 
           <MobileSelect
             options={cityList.filter((city) =>
-              currentOrigin ? city.value !== currentOrigin.code : true
+              watchedOrigin ? city.value !== watchedOrigin.code : true
             )}
             label="مقصد (شهر)"
             control={control}
@@ -249,15 +251,15 @@ const FlightSearch = () => {
         />
       </div>
 
-      {/* Submit Button - Touch-friendly */}
+      {/* Submit Button - Gradient Style */}
       <button
         onClick={handleSubmit(onSubmit)}
-        className={`text-base md:text-lg bg-primary rounded-xl md:rounded-2xl flex items-center justify-center h-12 md:h-14 px-6 md:px-10 text-primary-foreground w-full btn-touch transition-all duration-200 font-semibold shadow-md hover:shadow-lg active:scale-[0.98] ${
+        className={`text-base md:text-lg gradient-primary rounded-xl md:rounded-2xl flex items-center justify-center gap-2 h-12 md:h-14 px-6 md:px-10 text-primary-foreground w-full btn-touch transition-all duration-300 font-semibold ${
           !getValues('origin') ||
           !getValues('destination') ||
           !getValues('start')
-            ? `opacity-50 cursor-not-allowed`
-            : 'hover:bg-primary/90'
+            ? 'opacity-50 cursor-not-allowed'
+            : 'glow-primary hover:opacity-90 hover:scale-[1.02]'
         }`}
         disabled={
           !getValues('origin') ||
@@ -265,12 +267,15 @@ const FlightSearch = () => {
           !getValues('start')
         }
       >
-        جستجو
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <span>جستجو</span>
       </button>
 
-      <div className="border-b border-border my-2" />
+      <div className="border-b border-border/30 my-4" />
 
-      {/* Search History - Responsive */}
+      {/* Search History - Glass Style */}
       <div className="flex flex-col gap-3 md:gap-4">
         <div className="flex items-center justify-between">
           <p className="text-base md:text-lg font-bold text-foreground">تاریخچه جستجو</p>
@@ -280,11 +285,9 @@ const FlightSearch = () => {
                 localStorage.removeItem('searchHistory');
                 setParsedHistory([]);
               }}
-              className="btn-touch"
+              className="btn-touch text-sm md:text-base font-medium text-destructive hover:text-destructive/80 transition-colors"
             >
-              <p className="text-sm md:text-base font-bold text-destructive hover:text-destructive/90">
-                پاک کردن
-              </p>
+              پاک کردن
             </button>
           ) : null}
         </div>
@@ -293,7 +296,7 @@ const FlightSearch = () => {
             {parsedHistory.map((item: any, index: number) => (
               <div
                 key={index}
-                className="flex flex-col gap-2 bg-card border border-border/60 p-3 md:p-4 rounded-xl shadow-sm cursor-pointer hover:shadow-md hover:border-primary/30 transition-all duration-200 active:scale-[0.98]"
+                className="glass rounded-xl p-4 cursor-pointer hover:glow-primary transition-all duration-300 active:scale-[0.98] group"
                 onClick={() => {
                   onSubmit({
                     origin: {
@@ -315,16 +318,18 @@ const FlightSearch = () => {
                   });
                 }}
               >
-                <div className="flex items-center gap-2">
-                  <p className="text-sm md:text-base font-medium text-card-foreground">
+                <div className="flex items-center gap-2 mb-2">
+                  <p className="text-sm md:text-base font-medium text-foreground group-hover:text-primary transition-colors">
                     {
                       cityList.find(
                         (city) => city.value === item.from_destination
                       )?.label
                     }
                   </p>
-                  <span className="text-muted-foreground">←</span>
-                  <p className="text-sm md:text-base font-medium text-card-foreground">
+                  <svg className="w-4 h-4 text-muted-foreground rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                  <p className="text-sm md:text-base font-medium text-foreground group-hover:text-primary transition-colors">
                     {
                       cityList.find(
                         (city) => city.value === item.to_destination
@@ -346,7 +351,9 @@ const FlightSearch = () => {
             ))}
           </div>
         ) : (
-          <p className="text-sm md:text-base text-muted-foreground">تاریخچه جستجو خالی است</p>
+          <div className="glass rounded-xl p-6 text-center">
+            <p className="text-sm md:text-base text-muted-foreground">تاریخچه جستجو خالی است</p>
+          </div>
         )}
       </div>
     </div>

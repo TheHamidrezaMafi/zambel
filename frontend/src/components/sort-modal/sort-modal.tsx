@@ -1,8 +1,7 @@
 import React, { useCallback, useRef, useEffect, useState } from "react";
-import { SlideInModal } from "../common/slide-in-modal";
+import { BottomSheet } from "../common/bottom-sheet";
 import { useRouter } from "next/router";
 import { SortSchema } from "@/constants/sort-schema";
-import { Arrow } from "../common/icons";
 import SortRadio from "./sort-radio";
 import SortChip from "./sort-chip";
 import { omit } from "lodash";
@@ -85,19 +84,13 @@ const SortModal = ({ isLoading }: SortModalProperties) => {
 
       {/* Mobile Bottom Sheet */}
       {isMobile && (
-        <SlideInModal open={open}>
-          <div className="p-4 flex flex-col gap-4">
-            <div className="flex items-center gap-4 pb-4">
-              <button onClick={onCloseModal}>
-                <Arrow />
-              </button>
-              <p className="text-base font-bold">مرتب سازی</p>
-            </div>
+        <BottomSheet open={open} onClose={onCloseModal} title="مرتب سازی">
+          <div className="flex flex-col gap-3 pb-4">
             {SortSchema.map((item) => (
               <SortRadio item={item} key={item.value} />
             ))}
           </div>
-        </SlideInModal>
+        </BottomSheet>
       )}
     </div>
   );

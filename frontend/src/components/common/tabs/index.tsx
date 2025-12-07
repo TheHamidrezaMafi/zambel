@@ -14,7 +14,7 @@ const Tabs = ({
   return (
     <div
       className={`flex w-full ${
-        variant === 'filled' ? 'p-1 rounded-lg md:rounded-xl border border-border bg-muted/20' : ''
+        variant === 'filled' ? 'glass rounded-full p-1.5 inline-flex gap-1' : ''
       }`}
     >
       {list.map((item) => (
@@ -24,14 +24,14 @@ const Tabs = ({
             query: { ...query, [queryKey]: item.value },
           }}
           key={item.value}
-          className={`flex font-medium justify-center items-center min-h-10 md:min-h-11 w-full text-sm md:text-base transition-all ${
+          className={`flex font-medium justify-center items-center min-h-10 md:min-h-11 w-full text-sm md:text-base transition-all duration-300 ${
             selectedTab === item.value
               ? variant === 'filled'
-                ? 'text-primary-foreground rounded-md md:rounded-lg bg-primary shadow-sm'
+                ? 'gradient-primary text-primary-foreground rounded-full glow-primary'
                 : 'border-b-2 border-primary text-primary'
               : variant === 'filled'
-              ? 'text-muted-foreground hover:text-foreground'
-              : 'text-muted-foreground border-b-2 border-transparent hover:border-muted-foreground/20'
+              ? 'text-muted-foreground hover:text-foreground rounded-full'
+              : 'text-muted-foreground border-b-2 border-transparent hover:text-foreground'
           } ${
             item.disabled
               ? 'cursor-not-allowed pointer-events-none opacity-50'

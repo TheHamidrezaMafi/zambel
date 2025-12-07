@@ -7,19 +7,30 @@ const FilterCheckbox = ({ item, name, label }: FilterCheckboxProperties) => {
   const filter = router.query[name];
   const onSelect = useCallback(
     (value: string) => {
-      let filterList = (filter as string)?.split(',') || [];
+      let filterList = (filter as string)?.split(',').filter(Boolean) || [];
       if (filterList?.includes(value)) {
         filterList = filterList.filter((item) => item !== value);
       } else {
         filterList.push(value);
       }
+      
+      const newQuery = { ...router.query };
+      if (filterList.length > 0) {
+        newQuery[name] = filterList.join(',');
+      } else {
+        delete newQuery[name];
+      }
+      
       router.push({
         pathname: router.pathname,
-        query: { ...router.query, [name]: filterList.join(',') },
+        query: newQuery,
       });
     },
     [filter, name, router]
   );
+  
+  const isChecked = (filter as string)?.split(',').filter(Boolean).includes(item) || false;
+  
   return (
     <div className="flex items-center gap-3">
       <input
@@ -27,11 +38,11 @@ const FilterCheckbox = ({ item, name, label }: FilterCheckboxProperties) => {
         type="checkbox"
         id={item}
         name={item}
-        checked={(filter as string)?.split(',').includes(item)}
+        checked={isChecked}
         value={item}
-        className="w-5 h-5"
+        className="w-5 h-5 accent-primary cursor-pointer"
       />
-      <label className="flex items-center text-sm font-medium" htmlFor={item}>
+      <label className="flex items-center text-sm font-medium cursor-pointer" htmlFor={item}>
         {label || item}
       </label>
     </div>

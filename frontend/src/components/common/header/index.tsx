@@ -102,18 +102,18 @@ const Header = () => {
 
   return (
     <header
-      className={`bg-card w-full flex flex-col shadow-md z-50 sticky top-0 transition-all duration-300 safe-area-inset border-b border-border ${
+      className={`glass-strong w-full flex flex-col z-50 sticky top-0 transition-all duration-300 safe-area-inset border-b border-border/30 ${
         showSearch ? 'pb-3 md:pb-4' : ''
       }`}
     >
       <div className="flex flex-row min-h-14 md:min-h-16 pr-1 pl-3 md:pl-4 py-2 items-center">
         {isReady ? (
           <>
-            <Link href="/" className="text-muted-foreground h-10 w-10 md:h-12 md:w-12 p-2 md:p-3 ml-1 btn-touch hover:text-foreground transition-colors">
+            <Link href="/" className="text-muted-foreground h-10 w-10 md:h-12 md:w-12 p-2 md:p-3 ml-1 btn-touch hover:text-primary transition-colors">
               <Arrow />
             </Link>
             <div className="flex items-center justify-between w-full">
-              <p className="text-xs md:text-sm text-foreground font-medium">{title}</p>
+              <p className="text-sm md:text-base text-foreground font-medium">{title}</p>
               <p className="text-[10px] md:text-xs mt-1 text-muted-foreground">
                 {`${dateString} / 1 نفر`}
               </p>
@@ -135,8 +135,8 @@ const Header = () => {
         ) : null}
       </div>
       {showSearch && (
-        <div className="w-full px-3 md:px-4 pt-2">
-          <div className="bg-muted/50 rounded-lg md:rounded-xl p-3 md:p-4 shadow-inner flex flex-col gap-3 md:gap-4">
+        <div className="w-full px-3 md:px-4 pt-2 animate-slide-up">
+          <div className="glass rounded-2xl p-4 md:p-5 flex flex-col gap-3 md:gap-4">
             <p className="text-center text-sm md:text-base font-bold text-foreground">
               جستجوی پرواز
             </p>
@@ -181,20 +181,20 @@ const Header = () => {
                         });
                       }
                     }}
-                    className={`flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full transition-colors duration-200 border border-gray-500 btn-touch ${
+                    className={`flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full transition-all duration-300 border border-border btn-touch bg-secondary hover:bg-primary hover:text-primary-foreground hover:border-primary hover:rotate-180 ${
                       getValues('origin') && getValues('destination')
-                        ? 'bg-gray-100 hover:bg-gray-200 cursor-pointer'
-                        : 'bg-gray-50 cursor-not-allowed'
+                        ? 'cursor-pointer'
+                        : 'cursor-not-allowed opacity-50'
                     }`}
                     disabled={!getValues('origin') || !getValues('destination')}
                   >
                     <Swap
                       width="24"
                       height="24"
-                      fill={
+                      className={
                         getValues('origin') && getValues('destination')
-                          ? '#6B7280'
-                          : '#9CA3AF'
+                          ? 'fill-foreground'
+                          : 'fill-muted-foreground'
                       }
                     />
                   </button>
@@ -240,7 +240,7 @@ const Header = () => {
               </div>
               <button
                 type="submit"
-                className="bg-blue-600 text-white rounded-lg md:rounded-xl py-2.5 md:py-3 text-sm md:text-base font-bold hover:bg-blue-700 transition-colors w-full mx-auto btn-touch"
+                className="gradient-primary text-primary-foreground rounded-xl md:rounded-2xl py-2.5 md:py-3 text-sm md:text-base font-semibold transition-all duration-300 w-full mx-auto btn-touch glow-primary hover:opacity-90 hover:scale-[1.02]"
               >
                 جستجو
               </button>
