@@ -1,0 +1,40 @@
+syntax = "proto3";
+package scraper;
+
+service ScraperService {
+  rpc TakeRequests(GetRequestedFlightsByUserResponse) returns (FlightProcessedByUserReqeust);
+}
+
+message FlightRequestedByUserItem {
+    string requested_by_user_id  = 1;
+    string type                  = 2;
+    string from_destination      = 3;
+    string from_date             = 4;
+    string to_destination        = 5;
+    string to_date               = 6;
+    bool is_foreign_flight       = 7;
+}
+
+message GetRequestedFlightsByUserResponse {
+  string provider_name = 1;
+  repeated FlightRequestedByUserItem requests = 2;
+}
+
+message FlightProcessed {
+    string provider_name        = 1 ;
+    string origin               = 2 ;
+    string destination          = 3 ;
+    string departure_date_time  = 4 ;
+    string arrival_date_time    = 5 ;
+    int64 adult_price           = 6 ;
+    string airline_name_fa      = 7 ;
+    string airline_name_en      = 8 ;
+    string flight_number        = 9 ;
+    int32 capacity              = 10;
+    string rules                = 11;
+    bool is_foreign_flight      = 12;
+}
+
+message FlightProcessedByUserReqeust {
+    repeated FlightProcessed flights = 1;
+}

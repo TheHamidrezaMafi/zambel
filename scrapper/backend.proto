@@ -1,0 +1,43 @@
+syntax = "proto3";
+package backend;
+
+service FlightService {
+  rpc GetRequestedFlightsByUsers (
+    GetRequestedFlightsByUserRequest
+  ) returns (
+    GetRequestedFlightsByUserResponse
+  );
+
+  rpc SendProcessedFlightsByCrawler (
+    SendProcessedFlightsByCrawlerRequest
+  ) returns (
+    SendProcessedFlightsByCrawlerResponse
+  );
+}
+
+message GetRequestedFlightsByUserRequest {
+  int32 offset = 1;
+  int32 limit  = 2;
+}
+
+message FlightRequestedByUserItem {
+  string requested_by_user_id  = 1;
+  string type                  = 2;
+  string from_destination      = 3;
+  string from_date             = 4;
+  string to_destination        = 5;
+  string to_date               = 6;
+}
+
+message GetRequestedFlightsByUserResponse {
+  repeated FlightRequestedByUserItem items = 1;
+}
+
+message SendProcessedFlightsByCrawlerRequest {
+  repeated FlightRequestedByUserItem processed_items = 1;
+}
+
+message SendProcessedFlightsByCrawlerResponse {
+  bool success   = 1;
+  string message = 2;
+}
