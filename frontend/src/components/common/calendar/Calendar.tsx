@@ -903,7 +903,7 @@ const MobileCalendarSheet: React.FC<MobileCalendarSheetProps> = ({
 
   const MIN_HEIGHT = 50;
   const MAX_HEIGHT = 95;
-  const INITIAL_HEIGHT = 50;
+  const INITIAL_HEIGHT = 80;
   const DISMISS_THRESHOLD = 30;
 
   // Handle mounting for portal

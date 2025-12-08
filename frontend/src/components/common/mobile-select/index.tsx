@@ -10,6 +10,9 @@ export const MobileSelect = ({
   options,
   Icon,
   rules,
+  onSelect,
+  externalOpen,
+  onOpenChange,
 }: FloatingLabelSelectProps) => {
   const [searchValue, setSearchValue] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -17,6 +20,25 @@ export const MobileSelect = ({
   const [showAllCities, setShowAllCities] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(true); // Default to true for SSR
+
+  // Handle external open trigger
+  useEffect(() => {
+    if (externalOpen && isMobile) {
+      setIsMobileSheetOpen(true);
+      setSearchValue('');
+      setShowAllCities(false);
+    } else if (externalOpen && !isMobile) {
+      setIsDropdownOpen(true);
+      setShowAllCities(false);
+    }
+  }, [externalOpen, isMobile]);
+
+  // Notify parent of open state changes
+  useEffect(() => {
+    if (onOpenChange) {
+      onOpenChange(isMobileSheetOpen || isDropdownOpen);
+    }
+  }, [isMobileSheetOpen, isDropdownOpen, onOpenChange]);
 
   // Detect mobile
   useEffect(() => {
@@ -84,14 +106,19 @@ export const MobileSelect = ({
           const displayedOptions = showAllCities ? filteredOptions : filteredOptions.slice(0, 8);
 
           const handleSelectOption = (option: { value: string; label: string }) => {
-            field.onChange({
+            const selectedValue = {
               code: option.value,
               name: option.label,
-            });
+            };
+            field.onChange(selectedValue);
             setIsDropdownOpen(false);
             setIsMobileSheetOpen(false);
             setShowAllCities(false);
             setSearchValue('');
+            // Call onSelect callback after a small delay to allow state to update
+            if (onSelect) {
+              setTimeout(() => onSelect(selectedValue), 100);
+            }
           };
 
           return (

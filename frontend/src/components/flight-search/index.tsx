@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/router';
 
@@ -25,6 +25,18 @@ const FlightSearch = () => {
 
   const { data: cityList = [] } = useCities(flightDirection);
   const [parsedHistory, setParsedHistory] = useState<any[]>([]);
+  
+  // State for controlling auto-open flow on mobile
+  const [shouldOpenDestination, setShouldOpenDestination] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile for auto-flow
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const { control, handleSubmit, reset, getValues, setValue, watch } =
     useForm<FormValues>({
@@ -129,6 +141,12 @@ const FlightSearch = () => {
             control={control}
             name="origin"
             Icon={TakingoffAirPlane}
+            onSelect={() => {
+              // After origin is selected, open destination on mobile
+              if (isMobile) {
+                setShouldOpenDestination(true);
+              }
+            }}
           />
 
           {/* Swap Button - Desktop Position */}
@@ -207,6 +225,18 @@ const FlightSearch = () => {
             control={control}
             name="destination"
             Icon={LandingAirPlane}
+            externalOpen={shouldOpenDestination}
+            onOpenChange={(open) => {
+              if (!open) {
+                setShouldOpenDestination(false);
+              }
+            }}
+            onSelect={() => {
+              // After destination is selected, open calendar on mobile
+              if (isMobile) {
+                setTimeout(() => openCalendar(), 150);
+              }
+            }}
           />
         </div>
       </div>

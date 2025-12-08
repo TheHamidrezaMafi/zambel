@@ -10,4 +10,7 @@ export interface FloatingLabelSelectProps extends UseControllerProps {
   label: string;
   options: OptionType;
   Icon?: ComponentType<any>;
+  onSelect?: (value: { code: string; name: string }) => void;
+  externalOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
