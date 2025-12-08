@@ -26,17 +26,8 @@ const FlightSearch = () => {
   const { data: cityList = [] } = useCities(flightDirection);
   const [parsedHistory, setParsedHistory] = useState<any[]>([]);
   
-  // State for controlling auto-open flow on mobile
+  // State for controlling auto-open flow
   const [shouldOpenDestination, setShouldOpenDestination] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Detect mobile for auto-flow
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const { control, handleSubmit, reset, getValues, setValue, watch } =
     useForm<FormValues>({
@@ -142,10 +133,8 @@ const FlightSearch = () => {
             name="origin"
             Icon={TakingoffAirPlane}
             onSelect={() => {
-              // After origin is selected, open destination on mobile
-              if (isMobile) {
-                setShouldOpenDestination(true);
-              }
+              // After origin is selected, open destination
+              setShouldOpenDestination(true);
             }}
           />
 
@@ -232,10 +221,8 @@ const FlightSearch = () => {
               }
             }}
             onSelect={() => {
-              // After destination is selected, open calendar on mobile
-              if (isMobile) {
-                setTimeout(() => openCalendar(), 150);
-              }
+              // After destination is selected, open calendar
+              setTimeout(() => openCalendar(), 150);
             }}
           />
         </div>
