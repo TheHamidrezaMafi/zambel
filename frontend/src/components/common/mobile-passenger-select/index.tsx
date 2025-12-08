@@ -135,7 +135,7 @@ export const MobilePassengerSelect: FC<PassengerSelectProps> = ({
                   error && "!text-danger-600"
                 } ${
                   isFocused || field.value
-                    ? "!-top-3 !text-sm !text-[#052b61] !right-1"
+                    ? "!-top-3 !text-sm !text-primary !right-1"
                     : ""
                 }`}
               >

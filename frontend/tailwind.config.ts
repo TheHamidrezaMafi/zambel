@@ -40,7 +40,7 @@ export default {
       boxShadow: {
         custom1: '0px 2px 20px 0px rgba(153, 153, 153, 0.08)',
         custom2: '0px 20px 45px 4px rgba(144, 144, 144, 0.07)',
-        landingSearchBarButton: '0px 6px 25px 0px rgba(92, 80, 109, 0.5)',
+        landingSearchBarButton: '0px 6px 25px 0px rgba(180, 140, 20, 0.5)',
         cardShadow: ' 0px 8px 35px 0px rgba(144, 144, 144, 0.15)',
         'mobile-card': '0px 4px 15px 0px rgba(0, 0, 0, 0.1)',
       },

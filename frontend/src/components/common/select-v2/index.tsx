@@ -90,7 +90,7 @@ export const Select = ({
                 error && "!text-danger-600"
               } ${
                 isFocused || field.value
-                  ? "!-top-[12px] text-sm !text-[#052b61]"
+                  ? "!-top-[12px] text-sm !text-primary"
                   : ""
               }`}
             >
