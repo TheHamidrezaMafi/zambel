@@ -42,22 +42,22 @@
   }
 
   .dark {
-    --background: 222 47% 6%;
+    --background: 220 15% 13%;
     --foreground: 210 40% 98%;
 
-    --card: 222 47% 10%;
+    --card: 220 15% 17%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222 47% 12%;
+    --popover: 220 15% 19%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 45 93% 52%;
     --primary-foreground: 30 20% 10%;
 
-    --secondary: 222 47% 18%;
+    --secondary: 220 15% 22%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 222 30% 20%;
+    --muted: 220 12% 24%;
     --muted-foreground: 215 20% 65%;
 
     --accent: 38 92% 55%;
@@ -66,15 +66,15 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 222 30% 20%;
-    --input: 222 30% 18%;
+    --border: 220 12% 24%;
+    --input: 220 15% 20%;
     --ring: 45 93% 52%;
 
     /* Custom tokens for dark */
     --glow-primary: 45 93% 52%;
     --glow-accent: 38 92% 55%;
-    --glass: 222 47% 12%;
-    --glass-border: 222 30% 25%;
+    --glass: 220 15% 17%;
+    --glass-border: 220 12% 28%;
   }
 }
 
