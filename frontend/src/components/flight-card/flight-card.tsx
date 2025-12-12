@@ -1,3 +1,5 @@
+'use client';
+
 import { convertDateToTime } from '@/helper/dateConverter';
 import { ConvertRialToToman } from '@/helper/rilaToToman';
 import { FlightData } from '@/types/flight-response';
@@ -5,6 +7,7 @@ import Image from 'next/image';
 import { providerNameList } from '../flight-search/constants';
 import { useState } from 'react';
 import AirlineIcon from '../common/icons/AirlineIcon';
+import PriceHistoryModal from '../price-history-modal';
 
 const FlightCard = ({
   flight,
@@ -156,8 +159,14 @@ const FlightCard = ({
         </div>
       </div>
       
-      {/* Provider Badge */}
-      <div className="flex justify-end mt-3">
+      {/* Provider Badge & Price History */}
+      <div className="flex justify-between items-center mt-3">
+        <PriceHistoryModal
+          flightNumber={flight.flight_number || ''}
+          date={flight.departure_date_time?.split('T')[0] || ''}
+          origin={origin}
+          destination={destination}
+        />
         <p className="text-xs text-muted-foreground bg-secondary/50 px-3 py-1 rounded-full">
           تامین کننده: {getProviderName(provider_name)}
         </p>

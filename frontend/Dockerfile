@@ -16,7 +16,11 @@ RUN npm install
 # Copy all files
 COPY ./ ./
 
-# Build app
+# Accept build arguments for Next.js environment variables
+ARG NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
+
+# Build app (swcMinify is disabled in next.config.mjs to avoid ARM64 binary issues)
 RUN npm run build
 
 # Create cache directory with proper permissions

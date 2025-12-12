@@ -8,6 +8,7 @@ import { useState, useRef, useEffect } from 'react';
 import DetailCard from './detail-card';
 import { createPortal } from 'react-dom';
 import AirlineIcon from '../common/icons/AirlineIcon';
+import PriceHistoryModal from '../price-history-modal';
 
 const GroupFlightCard = ({ flight, airlineList }: any) => {
   const {
@@ -175,6 +176,16 @@ const GroupFlightCard = ({ flight, airlineList }: any) => {
           </div>
         </div>
       )}
+
+      {/* Price History Button */}
+      <div className="flex justify-start items-center mt-3 pt-3 border-t border-border/30">
+        <PriceHistoryModal
+          flightNumber={flight_number || ''}
+          date={departure_date_time?.split('T')[0] || ''}
+          origin={origin}
+          destination={destination}
+        />
+      </div>
 
       {/* Portal for popup - renders outside card hierarchy */}
       {showFlightCodes && typeof window !== 'undefined' && createPortal(

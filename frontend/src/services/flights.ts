@@ -1,6 +1,6 @@
 export const fetchFlights = async (parameters: any) => {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://api.zambeel.ir';
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
     const requestOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

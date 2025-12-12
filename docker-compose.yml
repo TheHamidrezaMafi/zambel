@@ -34,9 +34,10 @@ services:
     networks:
       - zambeel-network
     environment:
-      - NODE_ENV=production
-      - PORT=8080
-      - BACKEND_URL=https://api.zambeel.ir
+      - NODE_ENV=${NODE_ENV:-production}
+      - PORT=${PORT:-8080}
+      - BACKEND_URL=${API_BASE_URL:-http://localhost:8080}
+      - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8080}
     depends_on:
       - scraper
     healthcheck:
@@ -51,6 +52,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8080}
     image: zambeel-frontend
     container_name: zambeel-frontend-container
     restart: unless-stopped
@@ -59,7 +62,8 @@ services:
     networks:
       - zambeel-network
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=${NODE_ENV:-production}
+      - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8080}
     depends_on:
       - backend
     healthcheck:

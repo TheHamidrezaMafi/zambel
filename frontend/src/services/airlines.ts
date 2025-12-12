@@ -1,7 +1,6 @@
 export const fetchAirlines = async () => {
   try {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.zambeel.ir';
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
     const url = `${baseUrl}/airlines?page=1&limit=100000`;
     const response = await fetch(url);
     const result = await response.json();

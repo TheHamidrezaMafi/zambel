@@ -20,17 +20,7 @@ import { join } from 'path';
     }),
     EventEmitterModule.forRoot(),
     // ConfigModule.forRoot({ isGlobal: true, }),
-    DatabaseModule,
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'chogolisa.liara.cloud',
-      port: 34352,
-      username: 'root',
-      password: 'rWWZ82a4rQn5oBJEnIK9tEBk',
-      database: 'postgres',
-      synchronize: true,
-      autoLoadEntities: true,
-    }),
+    DatabaseModule, // This module already configures TypeORM with all entities
     CacheModule.registerAsync({
       isGlobal: true,
       useFactory: () => ({

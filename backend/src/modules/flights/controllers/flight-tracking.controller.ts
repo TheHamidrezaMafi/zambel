@@ -1,0 +1,366 @@
+import { Controller, Get, Post, Query, Param, Body, HttpStatus, HttpException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
+import { FlightTrackingService } from '../services/flight-tracking.service';
+import { AutomatedFlightTrackerService } from '../services/automated-flight-tracker.service';
+import {
+  FlightPriceQueryDto,
+  TrackedFlightDto,
+  PriceStatisticsDto,
+  RouteConfigDto,
+} from '../dto/flight-tracking.dto';
+
+@ApiTags('Flight Tracking')
+@Controller('flight-tracking')
+export class FlightTrackingController {
+  constructor(
+    private readonly trackingService: FlightTrackingService,
+    private readonly automatedTracker: AutomatedFlightTrackerService,
+  ) {}
+
+  /**
+   * Query flight price history with filters
+   */
+  @Get('prices')
+  @ApiOperation({ summary: 'جستجوی تاریخچه قیمت پرواز با فیلتر' })
+  @ApiResponse({ status: 200, description: 'لیست پرواز‌ها با تاریخچه قیمت' })
+  async queryFlightPrices(@Query() query: FlightPriceQueryDto) {
+    try {
+      return await this.trackingService.queryFlightPrices(query);
+    } catch (error) {
+      throw new HttpException(
+        'Error querying flight prices',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Get price statistics for a specific flight
+   */
+  @Get('statistics/:flightNumber/:date/:origin/:destination')
+  @ApiOperation({ summary: 'دریافت آمار قیمت برای یک پرواز خاص' })
+  @ApiParam({ name: 'flightNumber', description: 'شماره پرواز', example: 'IR263' })
+  @ApiParam({ name: 'date', description: 'تاریخ پرواز (YYYY-MM-DD)', example: '2025-01-15' })
+  @ApiParam({ name: 'origin', description: 'مبدا', example: 'THR' })
+  @ApiParam({ name: 'destination', description: 'مقصد', example: 'MHD' })
+  @ApiResponse({ status: 200, description: 'آمار قیمت پرواز', type: PriceStatisticsDto })
+  async getFlightStatistics(
+    @Param('flightNumber') flightNumber: string,
+    @Param('date') date: string,
+    @Param('origin') origin: string,
+    @Param('destination') destination: string,
+  ) {
+    try {
+      const flightDate = new Date(date);
+      const stats = await this.trackingService.getFlightPriceStatistics(
+        flightNumber,
+        flightDate,
+        origin,
+        destination,
+      );
+
+      if (!stats) {
+        throw new HttpException('Flight not found', HttpStatus.NOT_FOUND);
+      }
+
+      return stats;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error fetching flight statistics',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Get price trends for a specific route
+   */
+  @Get('trends/:origin/:destination')
+  @ApiOperation({ summary: 'دریافت روند قیمت برای یک مسیر خاص' })
+  @ApiParam({ name: 'origin', description: 'مبدا', example: 'THR' })
+  @ApiParam({ name: 'destination', description: 'مقصد', example: 'MHD' })
+  @ApiQuery({ name: 'daysAhead', required: false, description: 'تعداد روز جلو', example: 7 })
+  @ApiResponse({ status: 200, description: 'روند قیمت مسیر' })
+  async getRoutePriceTrends(
+    @Param('origin') origin: string,
+    @Param('destination') destination: string,
+    @Query('daysAhead') daysAhead?: number,
+  ) {
+    try {
+      return await this.trackingService.getRoutePriceTrends(
+        origin,
+        destination,
+        daysAhead || 7,
+      );
+    } catch (error) {
+      throw new HttpException(
+        'Error fetching route trends',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Get all active route configurations
+   */
+  @Get('routes')
+  @ApiOperation({ summary: 'دریافت تمام مسیرهای فعال' })
+  @ApiResponse({ status: 200, description: 'لیست مسیرهای فعال' })
+  async getActiveRoutes() {
+    try {
+      return await this.trackingService.getActiveRouteConfigs();
+    } catch (error) {
+      throw new HttpException(
+        'Error fetching routes',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Create or update a route configuration
+   */
+  @Post('routes')
+  @ApiOperation({ summary: 'ایجاد یا بروزرسانی تنظیمات مسیر' })
+  @ApiResponse({ status: 201, description: 'تنظیمات مسیر ایجاد/بروزرسانی شد' })
+  async createOrUpdateRoute(@Body() routeConfig: RouteConfigDto) {
+    try {
+      return await this.trackingService.upsertRouteConfig(routeConfig);
+    } catch (error) {
+      throw new HttpException(
+        'Error creating/updating route',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Initialize flight tracking system (creates tables and default routes)
+   */
+  @Post('init')
+  @ApiOperation({ summary: 'راه‌اندازی اولیه سیستم ردیابی پرواز' })
+  @ApiResponse({ status: 200, description: 'سیستم با موفقیت راه‌اندازی شد' })
+  async initializeSystem() {
+    try {
+      // This will create tables via synchronize and initialize routes
+      const result = await this.automatedTracker.initializeSystem();
+      return {
+        message: 'Flight tracking system initialized successfully',
+        ...result,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new HttpException(
+        `Error initializing system: ${errorMessage}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Manually trigger tracking for all routes
+   */
+  @Post('track/manual')
+  @ApiOperation({ summary: 'اجرای دستی ردیابی برای تمام مسیرها' })
+  @ApiResponse({ status: 200, description: 'ردیابی دستی شروع شد' })
+  async manualTrackAll() {
+    try {
+      // Run in background
+      this.automatedTracker.manualTrack().catch((error) => {
+        console.error('Manual tracking error:', error);
+      });
+
+      return {
+        message: 'Manual tracking started',
+        status: 'running',
+      };
+    } catch (error) {
+      throw new HttpException(
+        'Error starting manual tracking',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Manually trigger tracking for a specific route
+   */
+  @Post('track/route/:origin/:destination')
+  @ApiOperation({ summary: 'اجرای دستی ردیابی برای یک مسیر خاص' })
+  @ApiParam({ name: 'origin', description: 'مبدا', example: 'THR' })
+  @ApiParam({ name: 'destination', description: 'مقصد', example: 'MHD' })
+  @ApiResponse({ status: 200, description: 'ردیابی مسیر شروع شد' })
+  async manualTrackRoute(
+    @Param('origin') origin: string,
+    @Param('destination') destination: string,
+  ) {
+    try {
+      // Run in background
+      this.automatedTracker
+        .trackSpecificRoute(origin, destination)
+        .catch((error) => {
+          console.error(`Manual tracking error for ${origin}->${destination}:`, error);
+        });
+
+      return {
+        message: `Tracking started for route ${origin} -> ${destination}`,
+        status: 'running',
+      };
+    } catch (error) {
+      throw new HttpException(
+        'Error starting route tracking',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Get tracking system status
+   */
+  @Get('status')
+  @ApiOperation({ summary: 'دریافت وضعیت سیستم ردیابی' })
+  @ApiResponse({ status: 200, description: 'وضعیت سیستم ردیابی' })
+  getTrackingStatus() {
+    return this.automatedTracker.getTrackingStatus();
+  }
+
+  /**
+   * Get lowest price history for a specific flight
+   */
+  @Get('lowest-price/:flightNumber/:date/:origin/:destination')
+  @ApiOperation({ summary: 'دریافت تاریخچه کمترین قیمت برای یک پرواز خاص' })
+  @ApiParam({ name: 'flightNumber', description: 'شماره پرواز', example: '263' })
+  @ApiParam({ name: 'date', description: 'تاریخ پرواز (YYYY-MM-DD)', example: '2025-01-15' })
+  @ApiParam({ name: 'origin', description: 'مبدا', example: 'THR' })
+  @ApiParam({ name: 'destination', description: 'مقصد', example: 'MHD' })
+  @ApiResponse({ status: 200, description: 'تاریخچه کمترین قیمت' })
+  async getLowestPriceHistory(
+    @Param('flightNumber') flightNumber: string,
+    @Param('date') date: string,
+    @Param('origin') origin: string,
+    @Param('destination') destination: string,
+  ) {
+    try {
+      const flightDate = new Date(date);
+      const history = await this.trackingService.getLowestPriceHistory(
+        flightNumber,
+        flightDate,
+        origin,
+        destination,
+      );
+
+      if (!history) {
+        throw new HttpException('Flight not found', HttpStatus.NOT_FOUND);
+      }
+
+      return history;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error fetching lowest price history',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Get cheapest flights for a route in the next N days
+   */
+  @Get('cheapest/:origin/:destination')
+  @ApiOperation({ summary: 'دریافت ارزان‌ترین پروازها برای یک مسیر' })
+  @ApiParam({ name: 'origin', description: 'مبدا', example: 'THR' })
+  @ApiParam({ name: 'destination', description: 'مقصد', example: 'MHD' })
+  @ApiQuery({ name: 'daysAhead', required: false, description: 'تعداد روز جلو', example: 7 })
+  @ApiResponse({ status: 200, description: 'لیست ارزان‌ترین پروازها' })
+  async getCheapestFlights(
+    @Param('origin') origin: string,
+    @Param('destination') destination: string,
+    @Query('daysAhead') daysAhead?: number,
+  ) {
+    try {
+      const trends = await this.trackingService.getRoutePriceTrends(
+        origin,
+        destination,
+        daysAhead || 7,
+      );
+
+      // Sort by current price and return top 10
+      const cheapest = trends
+        .filter((t) => t.current_price !== null)
+        .sort((a, b) => Number(a.current_price) - Number(b.current_price))
+        .slice(0, 10);
+
+      return cheapest;
+    } catch (error) {
+      throw new HttpException(
+        'Error fetching cheapest flights',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Get price alerts - flights with significant price drops
+   */
+  @Get('alerts')
+  @ApiOperation({ summary: 'دریافت هشدارهای کاهش قیمت' })
+  @ApiQuery({
+    name: 'threshold',
+    required: false,
+    description: 'حداقل درصد کاهش قیمت',
+    example: 10,
+  })
+  @ApiResponse({ status: 200, description: 'لیست پروازهایی با کاهش قیمت قابل توجه' })
+  async getPriceAlerts(@Query('threshold') threshold?: number) {
+    try {
+      const minThreshold = threshold || 5; // Default 5% price drop
+
+      const query = {
+        start_date: new Date().toISOString().split('T')[0],
+        limit: 100,
+        page: 1,
+      };
+
+      const result = await this.trackingService.queryFlightPrices(query);
+
+      // Filter flights with recent price drops
+      const alerts = result.data
+        .map((flight) => {
+          const recentPrices = flight.price_history
+            .sort((a, b) => b.scraped_at.getTime() - a.scraped_at.getTime())
+            .slice(0, 2);
+
+          if (recentPrices.length >= 2) {
+            const priceChange = recentPrices[0].price_change_percentage;
+            if (priceChange && priceChange < -minThreshold) {
+              return {
+                flight_number: flight.flight_number,
+                flight_date: flight.flight_date,
+                origin: flight.origin,
+                destination: flight.destination,
+                airline_name_fa: flight.airline_name_fa,
+                current_price: recentPrices[0].adult_price,
+                previous_price: recentPrices[1].adult_price,
+                price_drop_percentage: priceChange,
+                provider: recentPrices[0].provider,
+              };
+            }
+          }
+          return null;
+        })
+        .filter((alert) => alert !== null);
+
+      return alerts;
+    } catch (error) {
+      throw new HttpException(
+        'Error fetching price alerts',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+}
