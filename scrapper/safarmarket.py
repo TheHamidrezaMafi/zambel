@@ -38,26 +38,49 @@ class SafarMarket:
             }
         }
         
-        async with aiohttp.ClientSession() as session:
-            async with session.post(self.api, headers=headers, json=payload) as response:
-                # print(response.status)
-                json_response = await response.json()
-                # print(json_response)
-
-                # response = requests.post(self.api, headers=headers, data=json.dumps(payload))
-
-                # response.raise_for_status()
-                flight_list = json_response.get("result", {}).get("flights", [])
-
-                if len(flight_list) > 0:
-                    flight_list = self.output_wrapper(flight_list)
-                    flight_list = self.transform_flight_data(flight_list, is_foreign_flight)
-                else:
-                    print(f"There were no flights for following date & endpoints in {self.provider_name}: origin: {origin}, "
+        timeout = aiohttp.ClientTimeout(total=60, connect=10)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            try:
+                async with session.post(self.api, headers=headers, json=payload) as response:
+                    # print(response.status)
+                    if response.status != 200:
+                        print(f"⚠️ SafarMarket API returned status {response.status}")
+                        return []
+                    
+                    json_response = await response.json()
+                    
+                    # Debug: Print response structure to diagnose issues
+                    print(f"✓ SafarMarket API response keys: {list(json_response.keys()) if json_response else 'None'}")
+                    
+                    if json_response and "result" in json_response:
+                        result = json_response.get("result", {})
+                        if isinstance(result, dict):
+                            print(f"  Result keys: {list(result.keys())}")
+                            flight_list = result.get("flights", [])
+                            print(f"  Found {len(flight_list) if flight_list else 0} flights in response")
+                        else:
+                            print(f"  ⚠️ Result is not a dict, got: {type(result)}")
+                            flight_list = []
+                    else:
+                        print(f"⚠️ SafarMarket: No 'result' in response")
+                        flight_list = []
+                    
+            except aiohttp.ClientError as e:
+                print(f"⚠️ SafarMarket connection error: {type(e).__name__}: {str(e)}")
+                return []
+            except Exception as e:
+                print(f"⚠️ SafarMarket unexpected error: {type(e).__name__}: {str(e)}")
+                return []
+            
+            if len(flight_list) > 0:
+                flight_list = self.output_wrapper(flight_list)
+                flight_list = self.transform_flight_data(flight_list, is_foreign_flight)
+            else:
+                print(f"There were no flights for following date & endpoints in {self.provider_name}: origin: {origin}, "
                         f"destination: {destination}, date: {date}.")
 
-                print("safarmarket crawled.")
-                return flight_list
+            print("safarmarket crawled.")
+            return flight_list if flight_list is not None else []
 
     @staticmethod
     def camel_to_snake(name: str) -> str:
@@ -102,11 +125,30 @@ class SafarMarket:
 
     def transform_flight_data(self, flight_list: list, is_foreign_flight: bool) -> list:
         transformed_flight_list = list()
-        origin, destination = self.find_flight_endpoints(flight_list[0])
+        
+        if not flight_list or len(flight_list) == 0:
+            print(f"⚠️ SafarMarket: Empty flight_list provided")
+            return transformed_flight_list
+            
+        try:
+            origin, destination = self.find_flight_endpoints(flight_list[0])
+        except Exception as e:
+            print(f"⚠️ SafarMarket: Could not find flight endpoints: {e}")
+            return transformed_flight_list
 
         for item in flight_list:
             try:
                 flights = item.get("providers")
+                
+                # Check if providers exists and is iterable
+                if not flights:
+                    # Skip silently - some items may not have providers
+                    continue
+                    
+                if not isinstance(flights, list):
+                    print(f"⚠️ SafarMarket: providers is not a list, got: {type(flights)}")
+                    continue
+                
                 for flight in flights:
                     try:
                         price = self.find_price(flight)

@@ -14,7 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ScraperController = void 0;
 const common_1 = require("@nestjs/common");
-const scraper_service_1 = require("../services/scraper.service");
+const scraper_http_service_1 = require("../services/scraper-http.service");
 let ScraperController = class ScraperController {
     constructor(scraperService) {
         this.scraperService = scraperService;
@@ -33,6 +33,6 @@ __decorate([
 ], ScraperController.prototype, "takeRequests", null);
 exports.ScraperController = ScraperController = __decorate([
     (0, common_1.Controller)('scraper'),
-    __metadata("design:paramtypes", [scraper_service_1.ScraperService])
+    __metadata("design:paramtypes", [scraper_http_service_1.ScraperHttpService])
 ], ScraperController);
 //# sourceMappingURL=scraper.controller.js.map

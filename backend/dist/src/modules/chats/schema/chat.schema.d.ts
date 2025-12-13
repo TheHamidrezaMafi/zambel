@@ -1,24 +1,24 @@
 import { Schema, Document } from 'mongoose';
 export declare const ChatSchema: Schema<any, import("mongoose").Model<any, any, any, any, any, any>, {}, {}, {}, {}, import("mongoose").DefaultSchemaOptions, {
+    timestamp: NativeDate;
     userId: number;
     conversationId: string;
     message: string;
     sender: "user" | "bot";
-    timestamp: NativeDate;
     topic?: string;
 }, Document<unknown, {}, import("mongoose").FlatRecord<{
+    timestamp: NativeDate;
     userId: number;
     conversationId: string;
     message: string;
     sender: "user" | "bot";
-    timestamp: NativeDate;
     topic?: string;
 }>> & import("mongoose").FlatRecord<{
+    timestamp: NativeDate;
     userId: number;
     conversationId: string;
     message: string;
     sender: "user" | "bot";
-    timestamp: NativeDate;
     topic?: string;
 }> & {
     _id: import("mongoose").Types.ObjectId;

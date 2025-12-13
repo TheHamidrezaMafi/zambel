@@ -28,10 +28,20 @@ export const useCities = (flightDirection: string) => {
     else if (flightDirection === 'international')
       filteredList = list?.filter((city: City) => city.country_code !== 'IR');
 
-    const seen = new Set();
+    // Deduplicate by city name (not airport code) to avoid showing Tehran twice
+    const seenCities = new Map();
     filteredList = filteredList?.filter((item: City) => {
-      if (seen.has(item.iata_code)) return false;
-      seen.add(item.iata_code);
+      const cityKey = item.persian_name + '_' + item.country_code;
+      if (seenCities.has(cityKey)) {
+        // If duplicate city, prefer IKA over THR for Tehran
+        const existing = seenCities.get(cityKey);
+        if (item.iata_code === 'IKA' && existing === 'THR') {
+          seenCities.set(cityKey, item.iata_code);
+          return true;
+        }
+        return false;
+      }
+      seenCities.set(cityKey, item.iata_code);
       return true;
     });
 

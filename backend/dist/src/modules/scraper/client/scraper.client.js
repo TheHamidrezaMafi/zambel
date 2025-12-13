@@ -8,7 +8,7 @@ exports.grpcScraperClientOptions = {
     options: {
         package: 'scraper',
         protoPath: (0, path_1.join)(__dirname, '../../../proto/scraper.proto'),
-        url: 'scrapper:50051',
+        url: 'scraper:50051',
         loader: {
             keepCase: true,
             longs: String,

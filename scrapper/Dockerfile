@@ -4,10 +4,7 @@ FROM python:3.12-slim
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /app
-
-# Install system dependencies for Playwright
+# Install system dependencies for Playwright (do this early as it rarely changes)
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
@@ -33,14 +30,20 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Install any needed packages specified in requirements.txt
-RUN pip install -r requirements.txt
+# Copy only requirements first to leverage Docker cache
+COPY requirements.txt .
 
-# Install Playwright browsers
+# Install Python packages (cached unless requirements.txt changes)
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Playwright browsers (cached unless requirements.txt changes)
 RUN playwright install chromium
+
+# Copy the rest of the application code (this layer changes frequently)
+COPY . /app
 
 # Make port 5000 available to the world outside this container
 EXPOSE 5000
 
-# Run app.py when the container launches
-CMD ["python", "main.py"]
+# Run FastAPI with uvicorn when the container launches
+CMD ["uvicorn", "fastapi_main:app", "--host", "0.0.0.0", "--port", "5000"]

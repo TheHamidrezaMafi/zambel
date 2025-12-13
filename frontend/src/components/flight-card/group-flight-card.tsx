@@ -151,7 +151,7 @@ const GroupFlightCard = ({ flight, airlineList }: any) => {
             className="flex items-center gap-2 justify-center text-sm font-semibold bg-primary text-primary-foreground mt-2 px-5 py-3 rounded-2xl hover:bg-primary/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg active:scale-95"
             onClick={() => setShowMore(!showMore)}
           >
-            {`${flights.length} سایت دیگر`}
+            {showMore ? 'بستن لیست' : `مشاهده ${flights.length} پیشنهاد`}
             <ArrowSmall
               className={`transition-transform duration-200 ${
                 showMore ? '-rotate-90' : 'rotate-90'
@@ -170,7 +170,9 @@ const GroupFlightCard = ({ flight, airlineList }: any) => {
               showMore ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0'
             }`}
           >
-            {flights.map((flight: any) => (
+            {flights
+              .sort((a: any, b: any) => a.adult_price - b.adult_price)
+              .map((flight: any) => (
               <DetailCard key={flight.id} flight={flight} />
             ))}
           </div>

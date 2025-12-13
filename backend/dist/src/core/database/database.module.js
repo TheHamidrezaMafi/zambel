@@ -12,6 +12,11 @@ const typeorm_1 = require("@nestjs/typeorm");
 const database_providers_1 = require("./database.providers");
 const airline_entity_1 = require("../../modules/airline/models/airline.entity");
 const airport_entity_1 = require("../../modules/airport/airport.entity");
+const tracked_flight_entity_1 = require("../../modules/flights/models/tracked-flight.entity");
+const flight_price_history_entity_1 = require("../../modules/flights/models/flight-price-history.entity");
+const lowest_price_snapshot_entity_1 = require("../../modules/flights/models/lowest-price-snapshot.entity");
+const route_config_entity_1 = require("../../modules/flights/models/route-config.entity");
+const scraping_session_entity_1 = require("../../modules/flights/models/scraping-session.entity");
 let DatabaseModule = class DatabaseModule {
 };
 exports.DatabaseModule = DatabaseModule;
@@ -21,7 +26,15 @@ exports.DatabaseModule = DatabaseModule = __decorate([
             typeorm_1.TypeOrmModule.forRootAsync({
                 useFactory: async () => {
                     const dataSource = await database_providers_1.typeOrmDatabaseProviders[0].useFactory();
-                    return Object.assign(Object.assign({}, dataSource.options), { entities: [airline_entity_1.Airline, airport_entity_1.Airport] });
+                    return Object.assign(Object.assign({}, dataSource.options), { entities: [
+                            airline_entity_1.Airline,
+                            airport_entity_1.Airport,
+                            tracked_flight_entity_1.TrackedFlight,
+                            flight_price_history_entity_1.FlightPriceHistory,
+                            lowest_price_snapshot_entity_1.LowestPriceSnapshot,
+                            route_config_entity_1.RouteConfig,
+                            scraping_session_entity_1.ScrapingSession,
+                        ] });
                 },
             }),
         ],

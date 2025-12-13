@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PluginModule } from './core/plugin.module';
 import { DatabaseModule } from './core/database/database.module';
+import { PostgresModule } from './core/database/postgres.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import mongodbConfig from './config/mongodb.config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -21,6 +22,7 @@ import { join } from 'path';
     EventEmitterModule.forRoot(),
     // ConfigModule.forRoot({ isGlobal: true, }),
     DatabaseModule, // This module already configures TypeORM with all entities
+    PostgresModule, // PostgreSQL for flight tracking database
     CacheModule.registerAsync({
       isGlobal: true,
       useFactory: () => ({

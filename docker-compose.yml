@@ -9,16 +9,17 @@ services:
     container_name: zambeel-scraper-container
     restart: unless-stopped
     ports:
-      - "127.0.0.1:5000:5000"
+      - "127.0.0.1:5001:5000"
     networks:
       - zambeel-network
     environment:
       - PYTHONUNBUFFERED=1
+      - DATABASE_URL=${DATABASE_URL:-postgresql://root:uOdMgLocGZfgtBabCufT46Im@chogolisa.liara.cloud:31593/postgres}
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "--method=GET", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
       start_period: 40s
 
   # Backend Service (NestJS)
@@ -38,6 +39,11 @@ services:
       - PORT=${PORT:-8080}
       - BACKEND_URL=${API_BASE_URL:-http://localhost:8080}
       - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8080}
+      - POSTGRES_HOST=${POSTGRES_HOST:-chogolisa.liara.cloud}
+      - POSTGRES_PORT=${POSTGRES_PORT:-31593}
+      - POSTGRES_USER=${POSTGRES_USER:-root}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-uOdMgLocGZfgtBabCufT46Im}
+      - POSTGRES_DATABASE=${POSTGRES_DATABASE:-postgres}
     depends_on:
       - scraper
     healthcheck:

@@ -447,6 +447,97 @@ export class FlightTrackingService {
   }
 
   /**
+   * Get comprehensive price history grouped by provider for chart display
+   */
+  async getComprehensivePriceHistory(
+    flightNumber: string,
+    flightDate: Date,
+    origin: string,
+    destination: string,
+  ) {
+    const flight = await this.trackedFlightRepository.findOne({
+      where: { flight_number: flightNumber, flight_date: flightDate, origin, destination },
+      relations: ['price_history'],
+      order: {
+        price_history: {
+          scraped_at: 'ASC',
+        },
+      },
+    });
+
+    if (!flight || !flight.price_history || flight.price_history.length === 0) {
+      return null;
+    }
+
+    // Group price history by provider
+    const providerData = new Map<string, any[]>();
+    flight.price_history.forEach((history) => {
+      if (!providerData.has(history.provider)) {
+        providerData.set(history.provider, []);
+      }
+      providerData.get(history.provider)!.push({
+        timestamp: history.scraped_at,
+        price: Number(history.adult_price),
+        available_seats: history.available_seats,
+        is_available: history.is_available,
+      });
+    });
+
+    // Calculate statistics per provider
+    const providers = Array.from(providerData.entries()).map(([provider, data]) => {
+      const prices = data.map(d => d.price);
+      const latestPrice = data[data.length - 1];
+      const firstPrice = data[0];
+
+      return {
+        provider,
+        data_points: data,
+        statistics: {
+          min_price: Math.min(...prices),
+          max_price: Math.max(...prices),
+          avg_price: Math.round(prices.reduce((sum, p) => sum + p, 0) / prices.length),
+          current_price: latestPrice.price,
+          first_price: firstPrice.price,
+          price_change: latestPrice.price - firstPrice.price,
+          price_change_percentage: ((latestPrice.price - firstPrice.price) / firstPrice.price) * 100,
+          total_snapshots: data.length,
+          latest_update: latestPrice.timestamp,
+        },
+      };
+    });
+
+    // Calculate overall statistics
+    const allPrices = flight.price_history.map(h => Number(h.adult_price));
+    const currentLowestProvider = providers.reduce((min, p) => 
+      p.statistics.current_price < min.statistics.current_price ? p : min
+    );
+
+    return {
+      flight_info: {
+        flight_number: flight.flight_number,
+        flight_date: flight.flight_date,
+        origin: flight.origin,
+        destination: flight.destination,
+        airline_name_fa: flight.airline_name_fa,
+        airline_name_en: flight.airline_name_en,
+        departure_time: flight.departure_time,
+        arrival_time: flight.arrival_time,
+      },
+      overall_statistics: {
+        min_price: Math.min(...allPrices),
+        max_price: Math.max(...allPrices),
+        avg_price: Math.round(allPrices.reduce((sum, p) => sum + p, 0) / allPrices.length),
+        total_snapshots: flight.price_history.length,
+        first_tracked: flight.price_history[0].scraped_at,
+        last_tracked: flight.price_history[flight.price_history.length - 1].scraped_at,
+        current_lowest_price: currentLowestProvider.statistics.current_price,
+        current_lowest_provider: currentLowestProvider.provider,
+      },
+      providers,
+    };
+  }
+
+  /**
    * Get price trends for a route
    */
   async getRoutePriceTrends(origin: string, destination: string, daysAhead: number = 7) {

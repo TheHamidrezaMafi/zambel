@@ -65,3 +65,37 @@ docker-compose.yml
 # Documentation
 README.md
 *.md
+*_SUMMARY.md
+*_REPORT.md
+*_GUIDE.md
+*_PLAN.md
+*_PROGRESS.md
+INDEX.md
+
+# Test files
+test_*.py
+*_test.py
+test/
+tests/
+
+# Temporary and backup files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Analysis and debug files
+analyze_*.py
+debug_*.py
+collect_*.py
+compare_*.py
+run_all_tests.sh
+
+# Token files (should be mounted as secrets)
+*_token.txt
+*.token
+
+# Proto compiled files (if regenerated)
+*_pb2.py
+*_pb2.pyi
+*_pb2_grpc.py

@@ -12,6 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Airport = void 0;
 const typeorm_1 = require("typeorm");
 let Airport = class Airport {
+    get iata_code() { return this.code; }
+    get icao_code() { return this.code; }
+    get persian_name() { return this.name_fa; }
+    get english_name() { return this.name_en; }
+    get country_code() { return this.country; }
 };
 exports.Airport = Airport;
 __decorate([
@@ -19,45 +24,37 @@ __decorate([
     __metadata("design:type", Number)
 ], Airport.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ name: 'code', nullable: true }),
     __metadata("design:type", String)
-], Airport.prototype, "iata_code", void 0);
+], Airport.prototype, "code", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ name: 'name_en', nullable: true }),
     __metadata("design:type", String)
-], Airport.prototype, "icao_code", void 0);
+], Airport.prototype, "name_en", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ name: 'name_fa', nullable: true }),
     __metadata("design:type", String)
-], Airport.prototype, "persian_name", void 0);
+], Airport.prototype, "name_fa", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ name: 'city_code', nullable: true }),
     __metadata("design:type", String)
-], Airport.prototype, "english_name", void 0);
+], Airport.prototype, "city_code", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ name: 'city_name_en', nullable: true }),
     __metadata("design:type", String)
-], Airport.prototype, "country_code", void 0);
+], Airport.prototype, "city_name_en", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", Number)
-], Airport.prototype, "time_zone", void 0);
+    (0, typeorm_1.Column)({ name: 'city_name_fa', nullable: true }),
+    __metadata("design:type", String)
+], Airport.prototype, "city_name_fa", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", Number)
-], Airport.prototype, "latitude", void 0);
+    (0, typeorm_1.Column)({ name: 'country', nullable: true }),
+    __metadata("design:type", String)
+], Airport.prototype, "country", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", Number)
-], Airport.prototype, "location_type_id", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", Number)
-], Airport.prototype, "altitude", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", Number)
-], Airport.prototype, "order_show", void 0);
+    (0, typeorm_1.Column)({ name: 'created_at', nullable: true }),
+    __metadata("design:type", Date)
+], Airport.prototype, "created_at", void 0);
 exports.Airport = Airport = __decorate([
     (0, typeorm_1.Entity)({ name: 'airports' })
 ], Airport);

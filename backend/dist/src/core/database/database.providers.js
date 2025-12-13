@@ -25,11 +25,11 @@ exports.typeOrmDatabaseProviders = [
             }
             const dataSource = new typeorm_1.DataSource({
                 type: 'postgres',
-                host: 'chogolisa.liara.cloud',
-                port: 34352,
-                username: 'root',
-                password: 'rWWZ82a4rQn5oBJEnIK9tEBk',
-                database: 'postgres',
+                host: process.env.POSTGRES_HOST || 'chogolisa.liara.cloud',
+                port: parseInt(process.env.POSTGRES_PORT || '31593'),
+                username: process.env.POSTGRES_USER || 'root',
+                password: process.env.POSTGRES_PASSWORD || 'uOdMgLocGZfgtBabCufT46Im',
+                database: process.env.POSTGRES_DATABASE || 'postgres',
                 entities: [airline_entity_1.Airline],
                 synchronize: false,
             });

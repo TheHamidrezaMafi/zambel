@@ -1,20 +1,20 @@
 import { Schema, Document } from 'mongoose';
 export declare const FeedbackSchema: Schema<any, import("mongoose").Model<any, any, any, any, any, any>, {}, {}, {}, {}, import("mongoose").DefaultSchemaOptions, {
+    timestamp: NativeDate;
     userId: string;
     message: string;
-    timestamp: NativeDate;
     response: string;
     feedback: "like" | "dislike";
 }, Document<unknown, {}, import("mongoose").FlatRecord<{
+    timestamp: NativeDate;
     userId: string;
     message: string;
-    timestamp: NativeDate;
     response: string;
     feedback: "like" | "dislike";
 }>> & import("mongoose").FlatRecord<{
+    timestamp: NativeDate;
     userId: string;
     message: string;
-    timestamp: NativeDate;
     response: string;
     feedback: "like" | "dislike";
 }> & {

@@ -438,3 +438,50 @@ input[type='radio'] {
     gap: 1rem;
   }
 }
+
+/* Custom Animations for Progressive Loading */
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px 5px rgba(251, 191, 36, 0.6);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-up {
+  animation: slide-in-up 0.5s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 0.8s ease-in-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-in forwards;
+}
+
+/* Smooth transitions for flight card updates */
+.transition-height {
+  transition: height 0.3s ease-in-out;
+}

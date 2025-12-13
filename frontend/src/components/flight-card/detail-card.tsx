@@ -6,7 +6,7 @@ import { getProviderLogo, providerNameList } from '../flight-search/constants';
 const DetailCard = ({ flight }: { flight: FlightData }) => {
   const { adult_price, provider_name, capacity } = flight;
 
-  const isSubmitDisabled = true;
+  const isSubmitDisabled = false;
   const getProviderName = (name: string) => {
     let providerName = name;
 
@@ -53,11 +53,11 @@ const DetailCard = ({ flight }: { flight: FlightData }) => {
               disabled={isSubmitDisabled}
               className={`text-sm font-medium rounded-lg flex items-center justify-center h-9 px-6 text-primary-foreground transition-colors ${
                 isSubmitDisabled 
-                  ? 'bg-muted text-muted-foreground cursor-not-allowed' 
+                  ? 'bg-primary hover:bg-primary/90' 
                   : 'bg-primary hover:bg-primary/90'
               }`}
             >
-              {capacity ? 'انتخاب' : 'ناموجود'}
+              {capacity ? 'خرید بلیط' : 'ناموجود'}
             </button>
           </div>
         </div>

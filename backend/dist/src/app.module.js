@@ -46,10 +46,10 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const plugin_module_1 = require("./core/plugin.module");
 const database_module_1 = require("./core/database/database.module");
+const postgres_module_1 = require("./core/database/postgres.module");
 const config_1 = require("@nestjs/config");
 const mongodb_config_1 = __importDefault(require("./config/mongodb.config"));
 const event_emitter_1 = require("@nestjs/event-emitter");
-const typeorm_1 = require("@nestjs/typeorm");
 const mongoose_1 = require("@nestjs/mongoose");
 const cache_manager_1 = require("@nestjs/cache-manager");
 const redisStore = __importStar(require("cache-manager-ioredis"));
@@ -67,16 +67,7 @@ exports.AppModule = AppModule = __decorate([
             }),
             event_emitter_1.EventEmitterModule.forRoot(),
             database_module_1.DatabaseModule,
-            typeorm_1.TypeOrmModule.forRoot({
-                type: 'postgres',
-                host: 'chogolisa.liara.cloud',
-                port: 34352,
-                username: 'root',
-                password: 'rWWZ82a4rQn5oBJEnIK9tEBk',
-                database: 'postgres',
-                synchronize: true,
-                autoLoadEntities: true,
-            }),
+            postgres_module_1.PostgresModule,
             cache_manager_1.CacheModule.registerAsync({
                 isGlobal: true,
                 useFactory: () => ({

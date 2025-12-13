@@ -5,33 +5,34 @@ export class Airport {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: true })
-  iata_code: string;
+  @Column({ name: 'code', nullable: true })
+  code: string;
 
-  @Column({ nullable: true })
-  icao_code: string;
+  @Column({ name: 'name_en', nullable: true })
+  name_en: string;
 
-  @Column({ nullable: true })
-  persian_name: string;
+  @Column({ name: 'name_fa', nullable: true })
+  name_fa: string;
 
-  @Column({ nullable: true })
-  english_name: string;
+  @Column({ name: 'city_code', nullable: true })
+  city_code: string;
 
-  @Column({ nullable: true })
-  country_code: string;
+  @Column({ name: 'city_name_en', nullable: true })
+  city_name_en: string;
 
-  @Column({ nullable: true })
-  time_zone: number;
+  @Column({ name: 'city_name_fa', nullable: true })
+  city_name_fa: string;
 
-  @Column({ nullable: true })
-  latitude: number;
+  @Column({ name: 'country', nullable: true })
+  country: string;
 
-  @Column({ nullable: true })
-  location_type_id: number;
+  @Column({ name: 'created_at', nullable: true })
+  created_at: Date;
 
-  @Column({ nullable: true })
-  altitude: number;
-
-  @Column({ nullable: true })
-  order_show: number;
+  // Aliases for backward compatibility
+  get iata_code(): string { return this.code; }
+  get icao_code(): string { return this.code; }
+  get persian_name(): string { return this.name_fa; }
+  get english_name(): string { return this.name_en; }
+  get country_code(): string { return this.country; }
 }

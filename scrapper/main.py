@@ -5,6 +5,8 @@ import threading
 from concurrent import futures
 from google.protobuf.json_format import MessageToDict,ParseDict
 import json
+import os
+import sys
 import scraper_pb2
 import scraper_pb2_grpc
 from pateh import Pateh
@@ -13,6 +15,26 @@ from alibaba import Alibaba
 from flytoday import FlyToday
 from safarmarket import SafarMarket
 from safar366 import Safar366
+
+# Add database directory to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'database'))
+from database.flight_database import FlightDatabase
+
+# Initialize database connection
+DATABASE_URL = os.getenv(
+    'DATABASE_URL',
+    'postgresql://root:uOdMgLocGZfgtBabCufT46Im@chogolisa.liara.cloud:31593/postgres'
+)
+flight_db = FlightDatabase(DATABASE_URL)
+
+# Connect to database at startup
+try:
+    flight_db.connect()
+    print("✓ Database connected successfully")
+except Exception as e:
+    print(f"⚠ Warning: Could not connect to database: {e}")
+    print("  Scraping will continue but data won't be saved to database")
+    flight_db = None
 
 async def crawl_with_thread(crawler, origin, destination, date, is_foreign_flight, flight_list, crawler_name):
     """
@@ -188,20 +210,76 @@ async def crawl_foreign(flight_requests: dict) -> list:
     print(f"foreign flights crawled. Total time taken: {execution_time:.2f} seconds")
     return flight_list
 
-def concatenate_flight_jsons(domestic_flights: list, foreign_flights: list) -> dict:
+def transform_flight_to_proto_format(flight: dict, provider_name: str) -> dict:
+    """
+    Transform a raw flight dict from scrapers to match the protobuf FlightProcessed format.
+    Only includes the 12 fields defined in scraper.proto.
+    """
+    return {
+        "provider_name": provider_name,
+        "origin": flight.get("origin", ""),
+        "destination": flight.get("destination", ""),
+        "departure_date_time": flight.get("leaveDateTime", ""),
+        "arrival_date_time": flight.get("arrivalDateTime", ""),
+        "adult_price": int(flight.get("priceAdult", 0)),
+        "airline_name_fa": flight.get("airlineName", ""),
+        "airline_name_en": flight.get("airline_name_en", ""),
+        "flight_number": flight.get("flightNumber", ""),
+        "capacity": int(flight.get("seat", 0)),
+        "rules": str(flight.get("crcn", "")),
+        "is_foreign_flight": flight.get("is_foreign_flight", False),
+    }
+
+def concatenate_flight_jsons(domestic_flights: list, foreign_flights: list, provider_name: str = "") -> dict:
     """
     Concatenate two lists of domestic and foreign flights, and return them as a dictionary (JSON-like structure).
+    Transforms each flight to match the protobuf FlightProcessed format.
 
     Args:
         domestic_flights (list[dict]): List of domestic flight data.
         foreign_flights (list[dict]): List of foreign flight data.
+        provider_name (str): Name of the provider (alibaba, mrbilit, etc.)
 
     Returns:
-        dict: A dictionary with a single key "flights" containing the combined list of all flights.
+        dict: A dictionary with a single key "flights" containing the combined list of transformed flights.
     """
-
-    combined = {"flights": domestic_flights + foreign_flights}
+    all_flights = domestic_flights + foreign_flights
+    
+    # Transform each flight to proto format
+    transformed_flights = [
+        transform_flight_to_proto_format(flight, provider_name)
+        for flight in all_flights
+    ]
+    
+    combined = {"flights": transformed_flights}
     return combined
+
+
+async def save_flights_to_database(flights: list, provider: str):
+    """
+    Save scraped flights to PostgreSQL database asynchronously.
+    This runs in the background and doesn't block the response.
+    
+    Args:
+        flights: List of unified flight dictionaries
+        provider: Provider name (alibaba, mrbilit, etc.)
+    """
+    if not flight_db:
+        print("⚠ Database not connected, skipping save")
+        return
+    
+    try:
+        print(f"\n💾 Saving {len(flights)} flights to database from {provider}...")
+        start_time = time.time()
+        
+        # Save to database using batch ingestion
+        stats = flight_db.ingest_unified_flights_batch(flights, provider)
+        
+        elapsed = time.time() - start_time
+        print(f"✓ Database save complete in {elapsed:.2f}s: {stats['success']} success, {stats['failed']} failed")
+    except Exception as e:
+        print(f"✗ Error saving to database: {e}")
+        # Don't raise - we don't want to fail the scraping request if DB save fails
 
 
 async def take_requests(flight_requests, context):
@@ -213,7 +291,23 @@ async def take_requests(flight_requests, context):
     internal_flights, foreign_flights = check_internal_foreign_flights(flight_requests)
     internal_flights_res = await crawl_domestic(internal_flights)
     foreign_flights_res = await crawl_foreign(foreign_flights)
-    flight_response = concatenate_flight_jsons(internal_flights_res, foreign_flights_res)
+    
+    # Get provider name from request
+    requests_dict = MessageToDict(flight_requests, preserving_proto_field_name=True)
+    provider = requests_dict.get("provider_name", "")
+    
+    # Transform flights to proto format
+    flight_response = concatenate_flight_jsons(internal_flights_res, foreign_flights_res, provider)
+    
+    # Save to database in background (don't block response)
+    # Note: We save the RAW flight data (with all fields) to database, not proto format
+    if internal_flights_res or foreign_flights_res:
+        raw_flights = internal_flights_res + foreign_flights_res
+        asyncio.create_task(save_flights_to_database(
+            raw_flights,
+            provider or "mixed"
+        ))
+    
     return flight_response
 
 
@@ -302,7 +396,18 @@ async def serve():
     server.add_insecure_port('[::]:50051')
     await server.start()
     print("gRPC server listening on port 50051")
-    await server.wait_for_termination()
+    print("Database integration: " + ("ENABLED ✓" if flight_db else "DISABLED ✗"))
+    
+    try:
+        await server.wait_for_termination()
+    finally:
+        # Graceful shutdown - disconnect from database
+        if flight_db:
+            try:
+                flight_db.disconnect()
+                print("✓ Database disconnected")
+            except Exception as e:
+                print(f"⚠ Error disconnecting database: {e}")
 
 if __name__ == '__main__':
     asyncio.run(serve())

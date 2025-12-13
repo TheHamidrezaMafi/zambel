@@ -26,4 +26,5 @@ export interface FlightData extends Flight {
   capacity: number;
   flight_number: string;
   original_flight_number?: string;
+  base_flight_id?: string;
 }

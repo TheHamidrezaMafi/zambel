@@ -87,8 +87,14 @@ const FlightSearch = () => {
 
     if (!origin || !destination || !start) return;
 
+    // Use streaming endpoint for progressive loading and better UX
+    const useStreaming = true; // Can be controlled by feature flag or user preference
+    const pathname = useStreaming 
+      ? `/flight-stream/${origin.code}/${destination.code}`
+      : `/flight/${origin.code}/${destination.code}`;
+
     push({
-      pathname: `/flight/${origin.code}/${destination.code}`,
+      pathname,
       query: {
         flightDirection,
         available: 'موجود',

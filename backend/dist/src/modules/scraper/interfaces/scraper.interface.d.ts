@@ -22,6 +22,7 @@ export interface FlightProcessed {
     airline_name_fa: string;
     airline_name_en: string;
     flight_number: string;
+    original_flight_number?: string;
     capacity: number;
     rules: string;
     is_foreign_flight: boolean;

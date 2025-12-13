@@ -7,6 +7,7 @@ import { TrackedFlight } from 'src/modules/flights/models/tracked-flight.entity'
 import { FlightPriceHistory } from 'src/modules/flights/models/flight-price-history.entity';
 import { LowestPriceSnapshot } from 'src/modules/flights/models/lowest-price-snapshot.entity';
 import { RouteConfig } from 'src/modules/flights/models/route-config.entity';
+import { ScrapingSession } from 'src/modules/flights/models/scraping-session.entity';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { RouteConfig } from 'src/modules/flights/models/route-config.entity';
             FlightPriceHistory,
             LowestPriceSnapshot,
             RouteConfig,
+            ScrapingSession,
           ], 
         };
       },

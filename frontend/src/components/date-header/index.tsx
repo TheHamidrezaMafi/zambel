@@ -7,19 +7,26 @@ const DateHeader = () => {
   const router = useRouter();
   const { query } = router;
   const { departureDate, returnDate } = query ?? {};
+  
+  // Parse date as local date to avoid timezone issues
   const departure = departureDate
-    ? new Date(departureDate as string)
-    : new Date();
+    ? (() => {
+        const [year, month, day] = (departureDate as string).split('-').map(Number);
+        return new Date(year, month - 1, day);
+      })()
+    : today;
+  
   const isToday = today.toDateString() === departure.toDateString();
   const isOneWay = returnDate === undefined;
   const onClick = useCallback(
     (isPreviousDay: boolean) => {
+      const newDate = new Date(departure);
       if (isPreviousDay) {
-        departure.setDate(departure.getDate() - 1);
+        newDate.setDate(newDate.getDate() - 1);
       } else {
-        departure.setDate(departure.getDate() + 1);
+        newDate.setDate(newDate.getDate() + 1);
       }
-      const newDepartureDate = departure.toISOString().split('T')[0];
+      const newDepartureDate = newDate.toISOString().split('T')[0];
       router.push({
         pathname: router.pathname,
         query: {
@@ -28,7 +35,7 @@ const DateHeader = () => {
         },
       });
     },
-    [departureDate, router]
+    [departure, query, router]
   );
   return (
     <>
@@ -45,7 +52,7 @@ const DateHeader = () => {
             روز قبل
           </button>
           <span className="text-sm font-bold gradient-text">
-            {new Date(departure).toLocaleDateString('fa-IR', { weekday: 'long', day: 'numeric', month: 'long' })}
+            {departure.toLocaleDateString('fa-IR', { weekday: 'long', day: 'numeric', month: 'long' })}
           </span>
           <button
             onClick={() => onClick(false)}

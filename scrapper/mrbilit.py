@@ -112,6 +112,7 @@ class MrBilit:
                     "adult_price": price,
                     "airline_name_fa": flight.get("segments")[0].get("legs")[0].get("airline").get("persian_title"),
                     "airline_name_en": flight.get("segments")[0].get("legs")[0].get("airline").get("english_title"),
+                    "airline_code": flight.get("segments")[0].get("legs")[0].get("airline_code"),
                     "flight_number": flight.get("segments")[0].get("legs")[0].get("flight_number"),
                     "capacity": 0 if price == 0 else flight.get("prices")[0].get("capacity", -1),
                     "is_foreign_flight": is_foreign_flight,

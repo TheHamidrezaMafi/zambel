@@ -398,6 +398,11 @@ class Safar366:
                 
                 # Extract capacity
                 seats_remaining = first_segment.get("seats_remaining", -1)
+                try:
+                    seats_remaining = int(seats_remaining)
+                except (ValueError, TypeError):
+                    seats_remaining = -1
+                
                 capacity = 0 if price == 0 else seats_remaining
 
                 new_flight = {
@@ -409,6 +414,7 @@ class Safar366:
                     "adult_price": price,
                     "airline_name_fa": airline_name_fa,
                     "airline_name_en": airline_name_en,
+                    "airline_code": airline_code,
                     "flight_number": str(flight_number),
                     "capacity": capacity,
                     "is_foreign_flight": is_foreign_flight,

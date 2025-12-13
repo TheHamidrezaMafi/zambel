@@ -8,9 +8,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ScraperModule = void 0;
 const common_1 = require("@nestjs/common");
-const microservices_1 = require("@nestjs/microservices");
-const scraper_client_1 = require("./client/scraper.client");
-const scraper_service_1 = require("./services/scraper.service");
+const axios_1 = require("@nestjs/axios");
+const scraper_http_service_1 = require("./services/scraper-http.service");
 const scraper_controller_1 = require("./controllers/scraper.controller");
 let ScraperModule = class ScraperModule {
 };
@@ -18,13 +17,14 @@ exports.ScraperModule = ScraperModule;
 exports.ScraperModule = ScraperModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            microservices_1.ClientsModule.register([
-                Object.assign({ name: 'SCRAPER_PACKAGE' }, scraper_client_1.grpcScraperClientOptions),
-            ]),
+            axios_1.HttpModule.register({
+                timeout: 120000,
+                maxRedirects: 5,
+            }),
         ],
-        providers: [scraper_service_1.ScraperService],
+        providers: [scraper_http_service_1.ScraperHttpService],
         controllers: [scraper_controller_1.ScraperController],
-        exports: [scraper_service_1.ScraperService],
+        exports: [scraper_http_service_1.ScraperHttpService],
     })
 ], ScraperModule);
 //# sourceMappingURL=scraper.module.js.map

@@ -1,20 +1,17 @@
 import { Module } from '@nestjs/common';
-import { ClientsModule } from '@nestjs/microservices';
-import { grpcScraperClientOptions } from './client/scraper.client';
-import { ScraperService } from './services/scraper.service';
+import { HttpModule } from '@nestjs/axios';
+import { ScraperHttpService } from './services/scraper-http.service';
 import { ScraperController } from './controllers/scraper.controller';
 
 @Module({
   imports: [
-    ClientsModule.register([
-      {
-        name: 'SCRAPER_PACKAGE',
-        ...grpcScraperClientOptions,
-      },
-    ]),
+    HttpModule.register({
+      timeout: 120000,
+      maxRedirects: 5,
+    }),
   ],
-  providers: [ScraperService],
+  providers: [ScraperHttpService],
   controllers: [ScraperController],
-  exports: [ScraperService],
+  exports: [ScraperHttpService],
 })
 export class ScraperModule {}

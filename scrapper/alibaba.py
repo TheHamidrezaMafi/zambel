@@ -47,7 +47,12 @@ class Alibaba:
         api = self.international_api if is_foreign_flight else self.domestic_api
 
         if not self.new_request_id:
-            self.get_request_id(origin, destination, date, is_foreign_flight)
+            await self.get_request_id(origin, destination, date, is_foreign_flight)
+
+        # If get_request_id failed, return empty list
+        if not self.request_id:
+            print(f"⚠️ Alibaba: No request ID available, skipping")
+            return []
 
         # while True:
         get_flights_url = f"{api}{self.request_id}"
@@ -56,13 +61,14 @@ class Alibaba:
             async with session.get(get_flights_url, headers=self.get_api_header) as flights_url_response:
 
                 if flights_url_response.status != 200 and self.new_request_id:
-                    raise Exception(f"GET API call failed with status code {flights_url_response.status}")
+                    print(f"⚠️ Alibaba GET API error (status {flights_url_response.status})")
+                    return []
 
                 elif flights_url_response.status != 200 and not self.new_request_id:
                     print(f"GET API call failed with status code {flights_url_response.status}\n"
                         f"We change request id and try one more time")
 
-                    self.get_request_id(origin, destination, date, is_foreign_flight)
+                    await self.get_request_id(origin, destination, date, is_foreign_flight)
                     self.new_request_id = False if is_foreign_flight else True
                     # continue
 
@@ -115,7 +121,7 @@ class Alibaba:
         """
         return cls.convert_keys(crawl_output)
 
-    def get_request_id(self, origin: str, destination: str, date: str, is_foreign_flight: bool):
+    async def get_request_id(self, origin: str, destination: str, date: str, is_foreign_flight: bool):
         payload = {
             "origin": origin,
             "destination": destination,
@@ -127,15 +133,18 @@ class Alibaba:
         }
 
         api = self.international_api if is_foreign_flight else self.domestic_api
-        post_response = requests.post(api, json=payload, headers=self.get_api_header)
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.post(api, json=payload, headers=self.get_api_header) as post_response:
+                if post_response.status != 200:
+                    text = await post_response.text()
+                    print(f"⚠️ Alibaba API error (status {post_response.status}): {text}")
+                    # Don't raise exception, just log and continue with empty results
+                    return
 
-        if post_response.status_code != 200:
-            raise Exception(f"POST API call failed with status code {post_response.status_code}."
-                            f"Error is: {post_response.text}")
-
-        post_data = post_response.json()
-        self.request_id = post_data.get("result", {}).get("requestId")
-        self.new_request_id = True
+                post_data = await post_response.json()
+                self.request_id = post_data.get("result", {}).get("requestId")
+                self.new_request_id = True
 
     def transform_flight_data(self, flight_list: list, is_foreign_flight: bool) -> list:
         transformed_flight_list = list()
@@ -143,19 +152,59 @@ class Alibaba:
         if not is_foreign_flight:
             for flight in flight_list:
                 try:
+                    # Extract additional details
+                    crcn_rules = flight.get("crcn", {})
+                    
                     new_flight = {
+                        # Basic Info
                         "provider_name": self.provider_name,
                         "origin": flight.get("origin", ""),
                         "destination": flight.get("destination", ""),
                         "departure_date_time": flight.get("leave_date_time", ""),
                         "arrival_date_time": flight.get("arrival_date_time", ""),
-                        "adult_price": int(flight.get("price_adult", 0)),
+                        "flight_number": flight.get("flight_number", ""),
+                        
+                        # Airline
                         "airline_name_fa": flight.get("airline_name", ""),
                         "airline_name_en": "",
-                        "flight_number": flight.get("flight_number", ""),
+                        "airline_code": flight.get("airline_code", ""),
+                        "airline_logo": flight.get("airline_logo", ""),
+                        
+                        # Pricing
+                        "adult_price": int(flight.get("price_adult", 0)),
+                        "child_price": int(flight.get("price_child", 0)) if flight.get("price_child") else None,
+                        "infant_price": int(flight.get("price_infant", 0)) if flight.get("price_infant") else None,
+                        
+                        # Capacity & Availability
                         "capacity": flight.get("seat", -1),
                         "is_foreign_flight": is_foreign_flight,
-                        "rules": str(flight.get("crcn", "")),
+                        "is_charter": flight.get("is_charter", False),
+                        "is_refundable": flight.get("is_refundable", True),
+                        
+                        # Cabin Class
+                        "cabin_class": flight.get("class_type_name", "اکونومی"),
+                        "cabin_class_code": flight.get("class", "Y"),
+                        
+                        # Aircraft
+                        "aircraft_type": flight.get("aircraft", ""),
+                        
+                        # Terminal
+                        "departure_terminal": flight.get("terminal", ""),
+                        "arrival_terminal": flight.get("arrival_terminal", ""),
+                        
+                        # Baggage
+                        "baggage_allowance": flight.get("baggage_allowance", ""),
+                        "cabin_baggage": flight.get("cabin_baggage", ""),
+                        
+                        # Policies
+                        "rules": crcn_rules,
+                        "cancellation_rules": crcn_rules,
+                        
+                        # Additional
+                        "unique_key": flight.get("unique_key", ""),
+                        "proposal_id": flight.get("proposal_id", ""),
+                        "is_promoted": flight.get("is_promoted", False),
+                        "discount_percent": flight.get("discount_percent", 0),
                     }
                     transformed_flight_list.append(new_flight)
                 except Exception as e:
@@ -165,20 +214,50 @@ class Alibaba:
         else:
              for flight in flight_list:
                 try:
+                    leaving_group = flight.get("leaving_flight_group", {})
+                    flight_details = leaving_group.get("flight_details", [{}])[0]
+                    prices = flight.get("prices", [{}])[0]
+                    
                     new_flight = {
+                        # Basic Info
                         "provider_name": self.provider_name,
-                        "origin": flight.get("leaving_flight_group").get("origin", ""),
-                        "destination": flight.get("leaving_flight_group").get("destination", ""),
-                        "departure_date_time": flight.get("leaving_flight_group").get("departure_date_time", ""),
-                        "arrival_date_time": flight.get("leaving_flight_group").get("arrival_date_time", ""),
-                        "adult_price": int(flight.get("prices")[0].get("per_passenger", 0)),
-                        "airline_name_fa": flight.get("leaving_flight_group").get("airline_name", ""),
-                        "airline_name_en": "",
-                        "flight_number": flight.get(
-                            "leaving_flight_group").get("flight_details")[0].get("flight_number", ""),
+                        "origin": leaving_group.get("origin", ""),
+                        "destination": leaving_group.get("destination", ""),
+                        "departure_date_time": leaving_group.get("departure_date_time", ""),
+                        "arrival_date_time": leaving_group.get("arrival_date_time", ""),
+                        "flight_number": flight_details.get("flight_number", ""),
+                        
+                        # Airline
+                        "airline_name_fa": leaving_group.get("airline_name", ""),
+                        "airline_name_en": leaving_group.get("airline_name_en", ""),
+                        "airline_code": leaving_group.get("airline_code", ""),
+                        
+                        # Pricing
+                        "adult_price": int(prices.get("per_passenger", 0)),
+                        "child_price": None,
+                        "infant_price": None,
+                        
+                        # Capacity
                         "capacity": flight.get("seat", -1),
                         "is_foreign_flight": is_foreign_flight,
+                        "is_charter": False,
+                        "is_refundable": True,
+                        
+                        # Cabin Class
+                        "cabin_class": flight.get("cabin_class", "اکونومی"),
+                        
+                        # Aircraft
+                        "aircraft_type": flight_details.get("aircraft", ""),
+                        
+                        # Baggage
+                        "baggage_allowance": flight.get("baggage", ""),
+                        "cabin_baggage": flight.get("cabin_baggage", ""),
+                        
+                        # Policies
                         "rules": flight.get("cabin_baggage", ""),
+                        
+                        # Additional
+                        "unique_key": flight.get("unique_key", ""),
                     }
                     transformed_flight_list.append(new_flight)
                 except Exception as e:

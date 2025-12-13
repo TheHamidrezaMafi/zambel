@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ScraperService } from '../services/scraper.service';
+import { ScraperHttpService } from '../services/scraper-http.service';
 import {
   FlightProcessedByUserReqeust,
   GetRequestedFlightsByUserResponse,
@@ -7,7 +7,7 @@ import {
 
 @Controller('scraper')
 export class ScraperController {
-  constructor(private readonly scraperService: ScraperService) {}
+  constructor(private readonly scraperService: ScraperHttpService) {}
 
   @Post()
   takeRequests(

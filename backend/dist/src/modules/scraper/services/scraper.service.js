@@ -74,7 +74,7 @@ let ScraperService = class ScraperService {
         return flights.map(flight => {
             const normalizedNumber = this.normalizeFlightNumber(flight.flight_number);
             const normalizedAirline = this.normalizeAirlineName(flight.airline_name_fa);
-            return Object.assign(Object.assign({}, flight), { flight_number: normalizedNumber, airline_name_fa: normalizedAirline });
+            return Object.assign(Object.assign({}, flight), { flight_number: normalizedNumber, original_flight_number: flight.flight_number, airline_name_fa: normalizedAirline });
         });
     }
     sortFlightsByDepartureTime(flights) {

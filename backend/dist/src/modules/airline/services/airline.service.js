@@ -66,18 +66,10 @@ let AirlineService = class AirlineService {
                 path.join(process.cwd(), 'dist/assets/logos/logo-map.json'),
                 path.join(process.cwd(), 'src/assets/logos/logo-map.json'),
             ];
-            console.log('🔍 Searching for logo-map.json in:');
             for (const logoMapPath of possiblePaths) {
-                console.log(`  Checking: ${logoMapPath} - ${fs.existsSync(logoMapPath) ? 'EXISTS' : 'NOT FOUND'}`);
                 if (fs.existsSync(logoMapPath)) {
                     this.logoMap = JSON.parse(fs.readFileSync(logoMapPath, 'utf-8'));
                     console.log(`✅ Loaded ${Object.keys(this.logoMap).length} airline logos from: ${logoMapPath}`);
-                    console.log(`📋 Sample mappings:`, {
-                        atl: this.logoMap['atl'],
-                        IRZ: this.logoMap['IRZ'],
-                        RI: this.logoMap['RI'],
-                        IR: this.logoMap['IR']
-                    });
                     return;
                 }
             }
@@ -87,53 +79,33 @@ let AirlineService = class AirlineService {
             console.warn('⚠️ Could not load logo map, will use database URLs:', error);
         }
     }
-    getLocalLogoUrl(airline, baseUrl = '') {
+    getLocalLogoUrl(airline) {
         if (airline.iata_code && this.logoMap[airline.iata_code]) {
             const relativePath = this.logoMap[airline.iata_code].replace('./', '/');
-            const localUrl = `${baseUrl}${relativePath}`;
-            if (airline.iata_code === 'atl' || airline.iata_code === 'IRZ') {
-                console.log(`🔗 Logo Mapping for ${airline.iata_code}:`, {
-                    airline_name: airline.persian_name,
-                    iata_code: airline.iata_code,
-                    mapped_path: this.logoMap[airline.iata_code],
-                    final_url: localUrl
-                });
-            }
-            return localUrl;
+            const backendUrl = process.env.BACKEND_URL || 'http://localhost:8080';
+            return `${backendUrl}${relativePath}`;
         }
         return airline.logo_url || '';
     }
     async getAllAirlines(page = 1, limit = 10, filters) {
         const offset = (page - 1) * limit;
         const query = this.airlineRepository.createQueryBuilder('airline');
-        if (filters.persian_name) {
-            query.andWhere('LOWER(airline.persian_name) LIKE LOWER(:persian_name)', {
-                persian_name: `%${filters.persian_name}%`,
+        if (filters.persian_name || filters['name_fa']) {
+            const nameFa = filters.persian_name || filters['name_fa'];
+            query.andWhere('LOWER(airline.name_fa) LIKE LOWER(:name_fa)', {
+                name_fa: `%${nameFa}%`,
             });
         }
-        if (filters.english_name) {
-            query.andWhere('LOWER(airline.english_name) LIKE LOWER(:english_name)', {
-                english_name: `%${filters.english_name}%`,
+        if (filters.english_name || filters['name_en']) {
+            const nameEn = filters.english_name || filters['name_en'];
+            query.andWhere('LOWER(airline.name_en) LIKE LOWER(:name_en)', {
+                name_en: `%${nameEn}%`,
             });
         }
-        if (filters.iata_code) {
-            query.andWhere('LOWER(airline.iata_code) LIKE LOWER(:iata_code)', {
-                iata_code: `%${filters.iata_code}%`,
-            });
-        }
-        if (filters.country_code) {
-            query.andWhere('LOWER(airline.country_code) LIKE LOWER(:country_code)', {
-                country_code: `%${filters.country_code}%`,
-            });
-        }
-        if (filters.digit_code) {
-            query.andWhere('LOWER(airline.digit_code) LIKE LOWER(:digit_code)', {
-                digit_code: `%${filters.digit_code}%`,
-            });
-        }
-        if (filters.logo_url) {
-            query.andWhere('LOWER(airline.logo_url) LIKE LOWER(:logo_url)', {
-                logo_url: `%${filters.logo_url}%`,
+        if (filters.iata_code || filters['code']) {
+            const code = filters.iata_code || filters['code'];
+            query.andWhere('LOWER(airline.code) LIKE LOWER(:code)', {
+                code: `%${code}%`,
             });
         }
         const [data, total] = await query

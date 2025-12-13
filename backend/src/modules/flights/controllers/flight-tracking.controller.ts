@@ -2,6 +2,8 @@ import { Controller, Get, Post, Query, Param, Body, HttpStatus, HttpException } 
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { FlightTrackingService } from '../services/flight-tracking.service';
 import { AutomatedFlightTrackerService } from '../services/automated-flight-tracker.service';
+import { FlightTrackingProgressService } from '../services/flight-tracking-progress.service';
+import { ScrapingSessionService } from '../services/scraping-session.service';
 import {
   FlightPriceQueryDto,
   TrackedFlightDto,
@@ -15,6 +17,8 @@ export class FlightTrackingController {
   constructor(
     private readonly trackingService: FlightTrackingService,
     private readonly automatedTracker: AutomatedFlightTrackerService,
+    private readonly progressService: FlightTrackingProgressService,
+    private readonly sessionService: ScrapingSessionService,
   ) {}
 
   /**
@@ -228,6 +232,57 @@ export class FlightTrackingController {
   }
 
   /**
+   * Get tracking progress with visual progress bars
+   */
+  @Get('progress')
+  @ApiOperation({ summary: 'دریافت پیشرفت ردیابی با نوار پیشرفت' })
+  @ApiResponse({ status: 200, description: 'پیشرفت فعلی ردیابی با نوار پیشرفت' })
+  getTrackingProgress() {
+    return this.progressService.getProgressSummary();
+  }
+
+  /**
+   * Get comprehensive price history for chart display
+   */
+  @Get('price-history/:flightNumber/:date/:origin/:destination')
+  @ApiOperation({ summary: 'دریافت تاریخچه کامل قیمت پرواز برای نمودار' })
+  @ApiParam({ name: 'flightNumber', description: 'شماره پرواز', example: '263' })
+  @ApiParam({ name: 'date', description: 'تاریخ پرواز (YYYY-MM-DD)', example: '2025-01-15' })
+  @ApiParam({ name: 'origin', description: 'مبدا', example: 'THR' })
+  @ApiParam({ name: 'destination', description: 'مقصد', example: 'MHD' })
+  @ApiResponse({ status: 200, description: 'تاریخچه کامل قیمت با گروه‌بندی تامین‌کننده' })
+  async getComprehensivePriceHistory(
+    @Param('flightNumber') flightNumber: string,
+    @Param('date') date: string,
+    @Param('origin') origin: string,
+    @Param('destination') destination: string,
+  ) {
+    try {
+      const flightDate = new Date(date);
+      const history = await this.trackingService.getComprehensivePriceHistory(
+        flightNumber,
+        flightDate,
+        origin,
+        destination,
+      );
+
+      if (!history) {
+        throw new HttpException('Flight not found or no price history available', HttpStatus.NOT_FOUND);
+      }
+
+      return history;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error fetching price history',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
    * Get lowest price history for a specific flight
    */
   @Get('lowest-price/:flightNumber/:date/:origin/:destination')
@@ -359,6 +414,177 @@ export class FlightTrackingController {
     } catch (error) {
       throw new HttpException(
         'Error fetching price alerts',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Pause the current tracking session
+   */
+  @Post('control/pause')
+  @ApiOperation({ summary: 'توقف موقت ردیابی فعلی' })
+  @ApiResponse({ status: 200, description: 'ردیابی متوقف شد' })
+  async pauseTracking() {
+    try {
+      const result = await this.automatedTracker.pauseTracking();
+      if (!result.success) {
+        throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
+      }
+      return result;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error pausing tracking',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Resume the paused tracking session
+   */
+  @Post('control/resume')
+  @ApiOperation({ summary: 'ادامه ردیابی متوقف شده' })
+  @ApiResponse({ status: 200, description: 'ردیابی از سر گرفته شد' })
+  async resumeTracking() {
+    try {
+      const result = await this.automatedTracker.resumeTracking();
+      if (!result.success) {
+        throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
+      }
+      return result;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error resuming tracking',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Stop the current tracking session
+   */
+  @Post('control/stop')
+  @ApiOperation({ summary: 'متوقف کردن کامل ردیابی فعلی' })
+  @ApiResponse({ status: 200, description: 'سیگنال توقف ارسال شد' })
+  async stopTracking() {
+    try {
+      const result = await this.automatedTracker.stopTracking();
+      if (!result.success) {
+        throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
+      }
+      return result;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error stopping tracking',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Get scraping session history
+   */
+  @Get('sessions')
+  @ApiOperation({ summary: 'دریافت تاریخچه جلسات ردیابی' })
+  @ApiQuery({ name: 'page', required: false, description: 'شماره صفحه', example: 1 })
+  @ApiQuery({ name: 'limit', required: false, description: 'تعداد در هر صفحه', example: 20 })
+  @ApiResponse({ status: 200, description: 'لیست جلسات ردیابی' })
+  async getSessionHistory(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    try {
+      return await this.sessionService.getSessionHistory(page || 1, limit || 20);
+    } catch (error) {
+      throw new HttpException(
+        'Error fetching session history',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Get recent scraping sessions
+   */
+  @Get('sessions/recent')
+  @ApiOperation({ summary: 'دریافت جلسات اخیر ردیابی' })
+  @ApiQuery({ name: 'limit', required: false, description: 'تعداد جلسات', example: 10 })
+  @ApiResponse({ status: 200, description: 'لیست جلسات اخیر' })
+  async getRecentSessions(@Query('limit') limit?: number) {
+    try {
+      return await this.sessionService.getRecentSessions(limit || 10);
+    } catch (error) {
+      throw new HttpException(
+        'Error fetching recent sessions',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Get active scraping session
+   */
+  @Get('sessions/active')
+  @ApiOperation({ summary: 'دریافت جلسه فعال ردیابی' })
+  @ApiResponse({ status: 200, description: 'جلسه فعال یا null' })
+  async getActiveSession() {
+    try {
+      return await this.sessionService.getActiveSession();
+    } catch (error) {
+      throw new HttpException(
+        'Error fetching active session',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Get session statistics
+   */
+  @Get('sessions/statistics')
+  @ApiOperation({ summary: 'دریافت آمار جلسات ردیابی' })
+  @ApiResponse({ status: 200, description: 'آمار کلی جلسات' })
+  async getSessionStatistics() {
+    try {
+      return await this.sessionService.getSessionStatistics();
+    } catch (error) {
+      throw new HttpException(
+        'Error fetching session statistics',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Get specific session by ID
+   */
+  @Get('sessions/:sessionId')
+  @ApiOperation({ summary: 'دریافت اطلاعات یک جلسه خاص' })
+  @ApiParam({ name: 'sessionId', description: 'شناسه جلسه' })
+  @ApiResponse({ status: 200, description: 'اطلاعات جلسه' })
+  async getSession(@Param('sessionId') sessionId: string) {
+    try {
+      const session = await this.sessionService.getSession(sessionId);
+      if (!session) {
+        throw new HttpException('Session not found', HttpStatus.NOT_FOUND);
+      }
+      return session;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error fetching session',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

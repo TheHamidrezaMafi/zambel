@@ -77,7 +77,8 @@ const ResultList = ({
       const normalizedFlightNum = normalizeFlightNumber(flight.flight_number);
       
       // Group ONLY by airline and flight number - combine all variants regardless of time
-      const key = `${normalizedAirline}-${normalizedFlightNum}`;
+      // Use base_flight_id if available, otherwise fallback to airline-flightNum
+      const key = flight.base_flight_id || `${normalizedAirline}-${normalizedFlightNum}`;
 
       if (!grouped[key]) {
         order.push(key);

@@ -19,14 +19,12 @@ let AirlineController = class AirlineController {
     constructor(airlineService) {
         this.airlineService = airlineService;
     }
-    async getAll(page = 1, limit = 10, persian_name, english_name, iata_code, country_code, digit_code, logo_url) {
+    async getAll(page = 1, limit = 10, persian_name, english_name, iata_code, code) {
         const filters = {
             persian_name,
             english_name,
             iata_code,
-            country_code,
-            digit_code,
-            logo_url,
+            code,
         };
         return this.airlineService.getAllAirlines(page, limit, filters);
     }
@@ -39,11 +37,9 @@ __decorate([
     __param(2, (0, common_1.Query)('persian_name')),
     __param(3, (0, common_1.Query)('english_name')),
     __param(4, (0, common_1.Query)('iata_code')),
-    __param(5, (0, common_1.Query)('country_code')),
-    __param(6, (0, common_1.Query)('digit_code')),
-    __param(7, (0, common_1.Query)('logo_url')),
+    __param(5, (0, common_1.Query)('code')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Number, String, String, String, String, String, String]),
+    __metadata("design:paramtypes", [Number, Number, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], AirlineController.prototype, "getAll", null);
 exports.AirlineController = AirlineController = __decorate([

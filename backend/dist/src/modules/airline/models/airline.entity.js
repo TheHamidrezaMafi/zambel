@@ -12,6 +12,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Airline = void 0;
 const typeorm_1 = require("typeorm");
 let Airline = class Airline {
+    get persian_name() { return this.name_fa; }
+    get english_name() { return this.name_en; }
+    get iata_code() { return this.code; }
 };
 exports.Airline = Airline;
 __decorate([
@@ -21,27 +24,27 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
-], Airline.prototype, "persian_name", void 0);
+], Airline.prototype, "code", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ name: 'name_fa', nullable: true }),
     __metadata("design:type", String)
-], Airline.prototype, "english_name", void 0);
+], Airline.prototype, "name_fa", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ name: 'name_en', nullable: true }),
     __metadata("design:type", String)
-], Airline.prototype, "iata_code", void 0);
+], Airline.prototype, "name_en", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", String)
-], Airline.prototype, "country_code", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
-    __metadata("design:type", String)
-], Airline.prototype, "digit_code", void 0);
-__decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ name: 'logo_url', nullable: true }),
     __metadata("design:type", String)
 ], Airline.prototype, "logo_url", void 0);
+__decorate([
+    (0, typeorm_1.CreateDateColumn)({ name: 'created_at', nullable: true }),
+    __metadata("design:type", Date)
+], Airline.prototype, "created_at", void 0);
+__decorate([
+    (0, typeorm_1.UpdateDateColumn)({ name: 'updated_at', nullable: true }),
+    __metadata("design:type", Date)
+], Airline.prototype, "updated_at", void 0);
 exports.Airline = Airline = __decorate([
     (0, typeorm_1.Entity)({ name: 'airlines' })
 ], Airline);

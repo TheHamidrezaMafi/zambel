@@ -1,26 +1,26 @@
 import { Schema, Document } from 'mongoose';
 export declare const TravelRequestSchema: Schema<any, import("mongoose").Model<any, any, any, any, any, any>, {}, {}, {}, {}, import("mongoose").DefaultSchemaOptions, {
+    timestamp: NativeDate;
     userId: number;
     conversationId: string;
-    timestamp: NativeDate;
     origin?: string;
     destination?: string;
     departureDate?: NativeDate;
     returnDate?: NativeDate;
     budget?: number;
 }, Document<unknown, {}, import("mongoose").FlatRecord<{
+    timestamp: NativeDate;
     userId: number;
     conversationId: string;
-    timestamp: NativeDate;
     origin?: string;
     destination?: string;
     departureDate?: NativeDate;
     returnDate?: NativeDate;
     budget?: number;
 }>> & import("mongoose").FlatRecord<{
+    timestamp: NativeDate;
     userId: number;
     conversationId: string;
-    timestamp: NativeDate;
     origin?: string;
     destination?: string;
     departureDate?: NativeDate;
